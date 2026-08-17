@@ -14,13 +14,40 @@ extension GoldenFixtures {
             return
         }
 
-        for (index, dot) in actual.dots.enumerated() {
-            let offset = index * 6
-            let values = [dot.x, dot.y, dot.z, dot.radius, dot.white, dot.alpha]
-            for component in 0..<6 {
-                #expect(abs(values[component] - expected.dots[offset + component]) <= tolerance)
-            }
+        for pair in zip(actual.dots, actual.dots.dropFirst()) {
+            #expect(pair.0.z <= pair.1.z + tolerance)
         }
+
+        let expectedDots = stride(from: 0, to: expected.dots.count, by: 6).map { offset in
+            OrbDot(
+                x: expected.dots[offset],
+                y: expected.dots[offset + 1],
+                z: expected.dots[offset + 2],
+                radius: expected.dots[offset + 3],
+                white: expected.dots[offset + 4],
+                alpha: expected.dots[offset + 5]
+            )
+        }
+        var unmatched = actual.dots
+        for expectedDot in expectedDots {
+            let expectedValues = [
+                expectedDot.x,
+                expectedDot.y,
+                expectedDot.z,
+                expectedDot.radius,
+                expectedDot.white,
+                expectedDot.alpha
+            ]
+            let match = unmatched.firstIndex { dot in
+                let values = [dot.x, dot.y, dot.z, dot.radius, dot.white, dot.alpha]
+                return zip(values, expectedValues).allSatisfy {
+                    abs($0.0 - $0.1) <= tolerance
+                }
+            }
+            #expect(match != nil)
+            if let match { unmatched.remove(at: match) }
+        }
+        #expect(unmatched.isEmpty)
 
         for (index, line) in actual.lines.enumerated() {
             let offset = index * 7

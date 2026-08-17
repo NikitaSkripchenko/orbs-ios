@@ -41,3 +41,10 @@ Support iOS 15 and later for version 0.1. Validate macOS separately before addin
 - Date: 2026-08-17
 
 Maintain `ThinkingOrbsDemo.xcodeproj` directly. Do not introduce XcodeGen or another project generator.
+
+## ADR-007: Equal-depth golden comparison
+
+- Status: Accepted
+- Date: 2026-08-17
+
+Swift and JavaScript standard-library math can produce different sub-tolerance signed-zero ordering for dots at exactly equal depth. The engine still emits dots monotonically far-to-near. Golden tests compare dot geometry as a unique multiset within `1e-4` and separately assert monotonic depth order; line order remains strict.

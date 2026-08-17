@@ -15,7 +15,7 @@
 - Record macOS package/demo/accessibility verification as future work in `TODO.md`.
 - Port all nine states: working, searching, solving, listening, connecting, weaving, composing, breathing, and shaping.
 - Ship only the separately tuned 20-point and 64-point sizes; do not expose arbitrary size scaling.
-- Public API: `ThinkingOrb(state:size:theme:speed:paused:accessibilityLabel:)` plus `OrbState`, `OrbSize`, and `OrbTheme`.
+- Public API: `ThinkingOrb(state:size:theme:speed:paused:reduceMotionOverride:accessibilityLabel:)` plus `OrbState`, `OrbSize`, and `OrbTheme`.
 - Use native SwiftUI `Canvas` and `TimelineView`; no WebKit, JavaScript runtime, Metal, SceneKit, SpriteKit, filters, blur, images, or external runtime dependency.
 - Pin upstream to `de85557ca220332586d070d8788c0e1d6e877a0d`, package `0.3.1`, spec `1.0.0` unless a newer revision is explicitly re-approved before implementation.
 - Vendor `spec/orbs-spec.json` and `spec/orbs-golden.json`; preserve upstream MIT copyright and visible attribution.
@@ -913,7 +913,7 @@ Expected: compilation fails because `OrbInk` and `OrbRenderBehavior` do not exis
 
 - [ ] **Step 3: Implement `ThinkingOrb`**
 
-Use `@Environment(\.colorScheme)` and `@Environment(\.accessibilityReduceMotion)`. `TimelineView(.animation(paused: paused || reduceMotion))` supplies the shared date. `OrbRenderBehavior.modeTime` returns `0.6` directly under Reduce Motion; otherwise it returns `date.timeIntervalSinceReferenceDate * preset.speed * OrbEngine.normalizedSpeed(userSpeed)`. Canvas size is the enum's raw value. Draw `frame.lines` first with `context.stroke`, then `frame.dots` with ellipse fills. Clamp white to `0...1`, mirror for dark, preserve alpha, and expose one accessibility element with the caller label or state default.
+Use `@Environment(\.colorScheme)` and `@Environment(\.accessibilityReduceMotion)`. Accept `reduceMotionOverride: Bool?` and use it only when nonnil; otherwise use the system environment. `TimelineView(.animation(paused: paused || effectiveReduceMotion))` supplies the shared date. `OrbRenderBehavior.modeTime` returns `0.6` directly under effective Reduce Motion; otherwise it returns `date.timeIntervalSinceReferenceDate * preset.speed * OrbEngine.normalizedSpeed(userSpeed)`. Canvas size is the enum's raw value. Draw `frame.lines` first with `context.stroke`, then `frame.dots` with ellipse fills. Clamp white to `0...1`, mirror for dark, preserve alpha, and expose one accessibility element with the caller label or state default.
 
 ```swift
 public init(
@@ -1031,7 +1031,7 @@ Expected: UI tests fail because Controls and All Animations do not exist.
 
 `ControlsView` accepts bindings for all six controls, wraps content in `NavigationView`, uses Form sections, state Picker, segmented size/theme pickers, speed Slider `0.25...2` with Reset, paused Toggle, forced Reduce Motion Toggle, and Done toolbar action.
 
-`GalleryView` uses `LazyVGrid` to render every `OrbState` at 64 points plus its label and a 20-point instance. Apply the demo-only forced setting with `.environment(\.accessibilityReduceMotion, forcedReduceMotion)` around previews.
+`GalleryView` uses `LazyVGrid` to render every `OrbState` at 64 points plus its label and a 20-point instance. Pass the demo-only forced setting through `reduceMotionOverride: forcedReduceMotion` on previews.
 
 - [ ] **Step 4: Run demo UI tests and build the native project**
 

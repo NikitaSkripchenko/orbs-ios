@@ -15,3 +15,5 @@ swift Scripts/generate-orb-spec.swift Upstream/orbs-spec.json Sources/ThinkingOr
 ```
 
 Run the complete iOS parity suite after any upstream refresh.
+
+The Swift parity harness treats equal-depth dot ordering as semantically interchangeable when values are within the pinned tolerance, while preserving the upstream far-to-near depth contract.

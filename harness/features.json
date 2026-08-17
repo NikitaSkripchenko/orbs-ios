@@ -1,31 +1,27 @@
 {
   "product": "ThinkingOrbsKit",
   "version": "0.1.0",
-  "status": "implementation",
-  "platform": {
-    "os": "iOS",
-    "minimumVersion": "15.0",
-    "macOS": "deferred"
-  },
+  "status": "complete",
+  "platform": { "os": "iOS", "minimumVersion": "15.0", "macOS": "deferred" },
   "sizes": [20, 64],
   "states": [
-    { "id": "working", "mode": "orbits", "status": "pending" },
-    { "id": "searching", "mode": "globe", "status": "pending" },
-    { "id": "solving", "mode": "rubik", "status": "pending" },
-    { "id": "listening", "mode": "wave", "status": "pending" },
-    { "id": "connecting", "mode": "web", "status": "pending" },
-    { "id": "weaving", "mode": "braid", "status": "pending" },
-    { "id": "composing", "mode": "ribbon", "status": "pending" },
-    { "id": "breathing", "mode": "ring", "status": "pending" },
-    { "id": "shaping", "mode": "morph", "status": "pending" }
+    { "id": "working", "mode": "orbits", "status": "complete" },
+    { "id": "searching", "mode": "globe", "status": "complete" },
+    { "id": "solving", "mode": "rubik", "status": "complete" },
+    { "id": "listening", "mode": "wave", "status": "complete" },
+    { "id": "connecting", "mode": "web", "status": "complete" },
+    { "id": "weaving", "mode": "braid", "status": "complete" },
+    { "id": "composing", "mode": "ribbon", "status": "complete" },
+    { "id": "breathing", "mode": "ring", "status": "complete" },
+    { "id": "shaping", "mode": "morph", "status": "complete" }
   ],
   "features": [
     { "id": "public-types", "status": "complete" },
-    { "id": "golden-parity", "status": "pending" },
-    { "id": "swiftui-renderer", "status": "pending" },
-    { "id": "demo-controls", "status": "pending" },
-    { "id": "demo-gallery", "status": "pending" },
-    { "id": "documentation", "status": "pending" }
+    { "id": "golden-parity", "status": "complete" },
+    { "id": "swiftui-renderer", "status": "complete" },
+    { "id": "demo-controls", "status": "complete" },
+    { "id": "demo-gallery", "status": "complete" },
+    { "id": "documentation", "status": "complete" }
   ],
   "acceptanceCriteria": [
     "The package builds for an iOS 15 or newer simulator.",

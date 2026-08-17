@@ -3,26 +3,36 @@
 ## Current state
 
 - Version: 0.1.0
-- Phase: package foundation
+- Phase: iOS package and demo implementation complete
 - Branch: `feature/full-animation-port`
 - Platform: iOS 15+
+- macOS: deferred in `TODO.md`; not claimed by version 0.1
 - Upstream commit: `de85557ca220332586d070d8788c0e1d6e877a0d`
 - Upstream package/spec: `0.3.1` / `1.0.0`
 
-## Completed
+## Implemented
 
-- Approved design and implementation plan.
-- Independent Git repository and isolated feature worktree.
-- Swift Package manifest and public state, size, theme, and label contracts.
+- Nine native deterministic animation engines: orbits, globe, rubik, wave, web, braid, ribbon/ring, and morph.
+- Both tuned sizes: 20 and 64 points.
+- Generated compile-time presets from pinned `orbs-spec.json`.
+- Golden-vector parity with equal-depth dot multiset handling and strict far-to-near depth ordering.
+- Public SwiftUI `ThinkingOrb` using `TimelineView` and `Canvas`.
+- Automatic/light/dark themes, speed, pause, Reduce Motion, accessibility labels, and demo-only `reduceMotionOverride`.
+- Native manually maintained `ThinkingOrbsDemo.xcodeproj` with controls sheet, all-state gallery, and UI tests. No XcodeGen.
+- MIT license, upstream provenance, README, ADRs, TODO, and machine-readable harness status.
 
 ## Verification
 
-- Public contract tests: `xcodebuild test -quiet -scheme ThinkingOrbsKit -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -only-testing:ThinkingOrbsKitTests/PublicTypesTests` — passed.
+- Package parity and behavior: `swift test --scratch-path /private/tmp/thinking-orbs-kit-swift-build` — 21 tests in 11 suites passed; 0 failures.
+- iOS package build: `xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsKit -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/thinking-orbs-demo-dd2` — passed.
+- Demo UI tests: `xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -only-testing:ThinkingOrbsDemoUITests -derivedDataPath /private/tmp/thinking-orbs-demo-dd2` — 2 tests passed; controls and gallery covered.
+- Demo build: `xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/thinking-orbs-demo-dd2` — passed.
+- Preset generation: `swift Scripts/generate-orb-spec.swift Upstream/orbs-spec.json /private/tmp/OrbSpec-final.swift` followed by a diff against `Sources/ThinkingOrbsKit/Generated/OrbSpec.swift` — no differences.
+- Harness validation: `jq empty harness/features.json` and `git diff --check` — passed.
+- Simulator: iPhone 17 Pro on iOS 26.5. Appearance and physical-device Instruments inspection were not performed.
 
-## Remaining
+## Decisions and risks
 
-- Vendor upstream fixtures and generated presets.
-- Port shared math and all nine animation states.
-- Add the public SwiftUI renderer.
-- Add the native demo project, controls sheet, gallery, and UI tests.
-- Run full parity and release verification.
+- The public renderer is wrapped in `#if os(iOS)` so host parity tests do not accidentally advertise macOS support. Add macOS only after the TODO checklist is completed.
+- Equal-depth dots can receive different sub-tolerance ordering across JavaScript and Swift math libraries. Tests compare each dot as a unique multiset within `1e-4` and separately require monotonic depth order; lines remain ordered strictly.
+- Manual visual, VoiceOver, and Instruments inspection remain release follow-ups. Automated golden parity, renderer behavior, and demo UI coverage are complete.

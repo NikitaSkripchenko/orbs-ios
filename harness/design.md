@@ -109,6 +109,7 @@ public struct ThinkingOrb: View {
         theme: OrbTheme = .automatic,
         speed: Double = 1,
         paused: Bool = false,
+        reduceMotionOverride: Bool? = nil,
         accessibilityLabel: String? = nil
     )
 }
@@ -149,7 +150,7 @@ ThinkingOrb(
 )
 ```
 
-The view owns no external state. Changing any input immediately changes subsequent rendered frames. Nonfinite speed falls back to `1`; negative speed is clamped to `0`. A speed of `0` renders a stable frame while `paused` preserves the current shared-clock phase.
+The view owns no external state. Changing any input immediately changes subsequent rendered frames. Nonfinite speed falls back to `1`; negative speed is clamped to `0`. A speed of `0` renders a stable frame while `paused` preserves the current shared-clock phase. `reduceMotionOverride` is an optional demo/testing hook; production callers should omit it so the system accessibility environment remains authoritative.
 
 ## Engine architecture
 
@@ -226,7 +227,7 @@ The controls sheet uses native SwiftUI controls:
 - segmented theme picker for Automatic, Light, and Dark;
 - speed slider from `0.25` through `2.0`, with a reset-to-1 action;
 - paused toggle; and
-- forced Reduce Motion preview toggle applied only to the demo environment.
+- forced Reduce Motion preview toggle applied only through the demo-only `reduceMotionOverride` parameter.
 
 The sheet uses a navigation title, Done action, semantic styles, Dynamic Type, and scrollable content at large accessibility sizes. Demo state is in memory only.
 

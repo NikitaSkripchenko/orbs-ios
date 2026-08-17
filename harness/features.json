@@ -1,0 +1,38 @@
+{
+  "product": "ThinkingOrbsKit",
+  "version": "0.1.0",
+  "status": "implementation",
+  "platform": {
+    "os": "iOS",
+    "minimumVersion": "15.0",
+    "macOS": "deferred"
+  },
+  "sizes": [20, 64],
+  "states": [
+    { "id": "working", "mode": "orbits", "status": "pending" },
+    { "id": "searching", "mode": "globe", "status": "pending" },
+    { "id": "solving", "mode": "rubik", "status": "pending" },
+    { "id": "listening", "mode": "wave", "status": "pending" },
+    { "id": "connecting", "mode": "web", "status": "pending" },
+    { "id": "weaving", "mode": "braid", "status": "pending" },
+    { "id": "composing", "mode": "ribbon", "status": "pending" },
+    { "id": "breathing", "mode": "ring", "status": "pending" },
+    { "id": "shaping", "mode": "morph", "status": "pending" }
+  ],
+  "features": [
+    { "id": "public-types", "status": "complete" },
+    { "id": "golden-parity", "status": "pending" },
+    { "id": "swiftui-renderer", "status": "pending" },
+    { "id": "demo-controls", "status": "pending" },
+    { "id": "demo-gallery", "status": "pending" },
+    { "id": "documentation", "status": "pending" }
+  ],
+  "acceptanceCriteria": [
+    "The package builds for an iOS 15 or newer simulator.",
+    "All nine states match the pinned upstream golden vectors at both tuned sizes.",
+    "Theme, speed, pause, Reduce Motion, shared-clock, and accessibility behavior are implemented.",
+    "The native demo project builds and exposes a controls sheet and all-state gallery.",
+    "No runtime or project-generator dependency is required.",
+    "macOS support is documented as future work and is not claimed by version 0.1."
+  ]
+}

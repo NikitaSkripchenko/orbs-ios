@@ -1,4 +1,4 @@
-import SwiftUI
+import Foundation
 
 enum OrbInk {
     static func gray(white: Double, dark: Bool) -> Double {
@@ -20,6 +20,9 @@ enum OrbRenderBehavior {
             * OrbEngine.normalizedSpeed(userSpeed)
     }
 }
+
+#if os(iOS)
+import SwiftUI
 
 public struct ThinkingOrb: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -111,3 +114,4 @@ public struct ThinkingOrb: View {
         Color(.sRGB, white: OrbInk.gray(white: white, dark: dark), opacity: alpha)
     }
 }
+#endif

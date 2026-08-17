@@ -30,6 +30,7 @@ public struct ThinkingOrb: View {
     private let theme: OrbTheme
     private let speed: Double
     private let paused: Bool
+    private let reduceMotionOverride: Bool?
     private let customAccessibilityLabel: String?
 
     public init(
@@ -38,6 +39,7 @@ public struct ThinkingOrb: View {
         theme: OrbTheme = .automatic,
         speed: Double = 1,
         paused: Bool = false,
+        reduceMotionOverride: Bool? = nil,
         accessibilityLabel: String? = nil
     ) {
         self.state = state
@@ -45,19 +47,21 @@ public struct ThinkingOrb: View {
         self.theme = theme
         self.speed = speed
         self.paused = paused
+        self.reduceMotionOverride = reduceMotionOverride
         self.customAccessibilityLabel = accessibilityLabel
     }
 
     public var body: some View {
         let resolved = OrbSpec.resolve(state: state, size: size)
+        let effectiveReduceMotion = reduceMotionOverride ?? reduceMotion
         TimelineView(.animation(
             minimumInterval: 1.0 / 60.0,
-            paused: paused || reduceMotion
+            paused: paused || effectiveReduceMotion
         )) { timeline in
             Canvas { context, _ in
                 let modeTime = OrbRenderBehavior.modeTime(
                     date: timeline.date,
-                    reduceMotion: reduceMotion,
+                    reduceMotion: effectiveReduceMotion,
                     presetSpeed: resolved.speed,
                     userSpeed: speed
                 )

@@ -1,4 +1,4 @@
-public enum OrbTheme: String, CaseIterable, Sendable {
+public enum OrbTheme: String, CaseIterable, Hashable, Sendable {
     case automatic
     case light
     case dark

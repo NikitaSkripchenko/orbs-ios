@@ -1,4 +1,4 @@
-public enum OrbState: String, CaseIterable, Sendable {
+public enum OrbState: String, CaseIterable, Hashable, Sendable {
     case working
     case searching
     case solving

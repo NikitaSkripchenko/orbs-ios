@@ -14,7 +14,8 @@ let package = Package(
         ),
         .testTarget(
             name: "ThinkingOrbsKitTests",
-            dependencies: ["ThinkingOrbsKit"]
+            dependencies: ["ThinkingOrbsKit"],
+            resources: [.process("Fixtures")]
         )
     ]
 )

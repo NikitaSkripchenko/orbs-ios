@@ -6,7 +6,7 @@
 
 **Architecture:** Pure Swift geometry functions produce final `OrbFrame` dot and line lists from generated compile-time presets. `ThinkingOrb` is a thin SwiftUI `TimelineView`/`Canvas` renderer over that engine; a separate iPhone demo consumes the package through a local package reference. Vendored upstream spec and golden JSON pin parity to one exact MIT-licensed source revision.
 
-**Tech Stack:** Swift tools 5.9, Swift 6-compatible source, SwiftUI, Foundation, Swift Package Manager, Swift Testing, Xcode 26.5, XcodeGen 2.46.0 as a maintainer-only demo-project generator, iOS Simulator, JSON golden fixtures.
+**Tech Stack:** Swift tools 5.9, Swift 6-compatible source, SwiftUI, Foundation, Swift Package Manager, Swift Testing, Xcode 26.5 native project files, iOS Simulator, JSON golden fixtures.
 
 ## Global Constraints
 
@@ -20,7 +20,7 @@
 - Pin upstream to `de85557ca220332586d070d8788c0e1d6e877a0d`, package `0.3.1`, spec `1.0.0` unless a newer revision is explicitly re-approved before implementation.
 - Vendor `spec/orbs-spec.json` and `spec/orbs-golden.json`; preserve upstream MIT copyright and visible attribution.
 - Match every golden dot and line within `1e-4`; missing, extra, or reordered marks fail parity.
-- Keep package-consumer builds free of Node, npm, TypeScript, Python, and XcodeGen requirements. XcodeGen is maintainer-only and its generated `.xcodeproj` is committed.
+- Keep package-consumer and maintainer builds free of Node, npm, TypeScript, Python, XcodeGen, and other project-generator requirements. Maintain and commit the native `.xcodeproj` directly.
 - Normal verification is offline and deterministic after the pinned files are vendored.
 - Use red-green TDD for every engine and public behavior. Watch each focused test fail for the intended missing/incorrect behavior before production implementation.
 - Make atomic commits at the end of every task.
@@ -66,7 +66,6 @@ Upstream/orbs-golden.json
 Upstream/UPSTREAM.md
 Scripts/generate-orb-spec.swift
 ThinkingOrbsDemo/
-  project.yml
   Info.plist
   ThinkingOrbsDemoApp.swift
   ContentView.swift
@@ -948,54 +947,40 @@ git commit -m "feat: add public ThinkingOrb view"
 ### Task 12: Create the iPhone demo with controls sheet and gallery
 
 **Files:**
-- Create: `ThinkingOrbsDemo/project.yml`
 - Create: `ThinkingOrbsDemo/Info.plist`
 - Create: `ThinkingOrbsDemo/ThinkingOrbsDemoApp.swift`
 - Create: `ThinkingOrbsDemo/ContentView.swift`
 - Create: `ThinkingOrbsDemo/ControlsView.swift`
 - Create: `ThinkingOrbsDemo/GalleryView.swift`
 - Create: `ThinkingOrbsDemoUITests/ThinkingOrbsDemoUITests.swift`
-- Generate: `ThinkingOrbsDemo.xcodeproj`
+- Create: `ThinkingOrbsDemo.xcodeproj/project.pbxproj`
+- Create: `ThinkingOrbsDemo.xcodeproj/project.xcworkspace/contents.xcworkspacedata`
+- Create: `ThinkingOrbsDemo.xcodeproj/xcshareddata/xcschemes/ThinkingOrbsDemo.xcscheme`
 
 **Interfaces:**
 - Consumes: only public `ThinkingOrbsKit` API through a local package reference.
 - Produces: iPhone app scheme `ThinkingOrbsDemo`, UI-test scheme coverage, and controls for every public option.
 
-- [ ] **Step 1: Create the XcodeGen project specification**
+- [ ] **Step 1: Create the native Xcode project directly**
 
-```yaml
-name: ThinkingOrbsDemo
-options:
-  bundleIdPrefix: com.thinkingorbs
-  deploymentTarget:
-    iOS: "15.0"
-packages:
-  ThinkingOrbsKit:
-    path: .
-targets:
-  ThinkingOrbsDemo:
-    type: application
-    platform: iOS
-    sources:
-      - path: ThinkingOrbsDemo
-        excludes: [project.yml]
-    info:
-      path: ThinkingOrbsDemo/Info.plist
-      properties:
-        UILaunchScreen: {}
-    dependencies:
-      - package: ThinkingOrbsKit
-    settings:
-      base:
-        SWIFT_VERSION: 6.0
-        TARGETED_DEVICE_FAMILY: 1
-  ThinkingOrbsDemoUITests:
-    type: bundle.ui-testing
-    platform: iOS
-    sources: [ThinkingOrbsDemoUITests]
-    dependencies:
-      - target: ThinkingOrbsDemo
+Create and commit a standard Xcode project without a generator. The project contains:
+
+```text
+Project: ThinkingOrbsDemo
+App target: ThinkingOrbsDemo
+UI test target: ThinkingOrbsDemoUITests
+Shared scheme: ThinkingOrbsDemo (builds app, runs UI tests)
+Local package reference: repository root `.`
+Linked package product: ThinkingOrbsKit on the app target
+App deployment target: iOS 15.0
+UI-test deployment target: iOS 15.0
+Swift language version: 6.0
+Targeted device family: 1 (iPhone)
+Bundle identifiers: com.thinkingorbs.demo and com.thinkingorbs.demoUITests
+Info plist: ThinkingOrbsDemo/Info.plist
 ```
+
+`project.pbxproj` must use explicit `PBXFileReference` and `PBXBuildFile` entries for every app and UI-test Swift file, `XCLocalSwiftPackageReference` with `relativePath = .`, and `XCSwiftPackageProductDependency` with `productName = ThinkingOrbsKit`. The shared scheme includes `ThinkingOrbsDemoUITests` in its TestAction. Do not create user-specific `xcuserdata`.
 
 - [ ] **Step 2: Create a minimal app shell and failing UI tests**
 
@@ -1035,7 +1020,6 @@ final class ThinkingOrbsDemoUITests: XCTestCase {
 Run:
 
 ```bash
-xcodegen generate --spec ThinkingOrbsDemo/project.yml --project . --project-root .
 xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -only-testing:ThinkingOrbsDemoUITests
 ```
 
@@ -1049,16 +1033,14 @@ Expected: UI tests fail because Controls and All Animations do not exist.
 
 `GalleryView` uses `LazyVGrid` to render every `OrbState` at 64 points plus its label and a 20-point instance. Apply the demo-only forced setting with `.environment(\.accessibilityReduceMotion, forcedReduceMotion)` around previews.
 
-- [ ] **Step 4: Run demo UI tests, build, and regenerate deterministically**
+- [ ] **Step 4: Run demo UI tests and build the native project**
 
 ```bash
 xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -only-testing:ThinkingOrbsDemoUITests
 xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator'
-xcodegen generate --spec ThinkingOrbsDemo/project.yml --project /private/tmp/ThinkingOrbsDemoGenerated --project-root .
-diff -ru ThinkingOrbsDemo.xcodeproj /private/tmp/ThinkingOrbsDemoGenerated/ThinkingOrbsDemo.xcodeproj
 ```
 
-Expected: demo builds and project regeneration is stable.
+Expected: UI tests pass and the directly maintained native project builds without warnings.
 
 - [ ] **Step 5: Commit the demo**
 
@@ -1134,5 +1116,5 @@ git commit -m "docs: complete ThinkingOrbsKit handoff"
 - [ ] Harness contains valid features, design, ADR, and handoff files.
 - [ ] Exact upstream commit/spec/package version and MIT attribution are recorded.
 - [ ] macOS remains in `TODO.md` and is not claimed as supported.
-- [ ] Package consumers need no Node, npm, TypeScript, Python, XcodeGen, WebKit, or Photo Coach dependency.
+- [ ] Package consumers and maintainers need no Node, npm, TypeScript, Python, XcodeGen, other project generator, WebKit, or Photo Coach dependency.
 - [ ] Final package tests and package/demo simulator builds pass without new compiler or Swift concurrency warnings.

@@ -1,0 +1,6 @@
+.worktrees/
+.upstream-source/
+.DS_Store
+DerivedData/
+*.xcuserstate
+xcuserdata/

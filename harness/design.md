@@ -212,15 +212,13 @@ The root `LICENSE` preserves the upstream MIT license and copyright notice. `REA
 
 `ThinkingOrbsDemo` is a checked-in native iPhone Xcode project targeting iOS 15 or later and depending on the sibling package through a local package reference.
 
-The main screen contains:
+The app uses a native bottom tab bar with **All Animations** selected by default and **Playground** as the second tab.
 
-- a large live preview using the selected state and theme;
-- the current state name and accessibility label;
-- an inline 20-point instance for scale comparison;
-- a **Controls** button that presents a native sheet; and
-- a secondary gallery containing all nine states for quick parity inspection.
+- **All Animations** presents all nine states in an adaptive grid for quick parity inspection.
+- **Playground** centers a large live preview using the selected state, size, theme, speed, pause, and Reduce Motion settings.
+- A bottom-anchored **Settings** button in Playground presents the animation picker and settings in a native sheet. On iOS 16 and later the sheet supports medium and large detents; iOS 15 uses the standard sheet presentation.
 
-The controls sheet uses native SwiftUI controls:
+The Playground settings sheet uses native SwiftUI controls:
 
 - state picker for all nine states;
 - segmented size picker for 20 and 64 points;

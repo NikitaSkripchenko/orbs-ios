@@ -2,7 +2,6 @@ import SwiftUI
 import ThinkingOrbsKit
 
 struct GalleryView: View {
-    @Environment(\.dismiss) private var dismiss
     let theme: OrbTheme
     let forcedReduceMotion: Bool
 
@@ -28,14 +27,6 @@ struct GalleryView: View {
                 .padding()
             }
             .navigationTitle("All Animations")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
         }
     }
 }

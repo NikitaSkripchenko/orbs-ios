@@ -19,6 +19,7 @@
 - Public SwiftUI `ThinkingOrb` using `TimelineView` and `Canvas`.
 - Automatic/light/dark themes, speed, pause, Reduce Motion, accessibility labels, and demo-only `reduceMotionOverride`.
 - Native manually maintained `ThinkingOrbsDemo.xcodeproj` with controls sheet, all-state gallery, and UI tests. No XcodeGen.
+- Demo navigation now uses a native two-item bottom tab bar. **All Animations** is the default tab; **Playground** centers the selected orb and presents its animation picker and settings in a bottom sheet.
 - MIT license, upstream provenance, README, ADRs, TODO, and machine-readable harness status.
 
 ## Verification
@@ -29,6 +30,9 @@
 - Demo build: `xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/thinking-orbs-demo-dd2` — passed.
 - Preset generation: `swift Scripts/generate-orb-spec.swift Upstream/orbs-spec.json /private/tmp/OrbSpec-final.swift` followed by a diff against `Sources/ThinkingOrbsKit/Generated/OrbSpec.swift` — no differences.
 - Harness validation: `jq empty harness/features.json` and `git diff --check` — passed.
+- Bottom-tab demo package verification: `swift test --scratch-path /private/tmp/thinking-orbs-kit-tabs-swift-build` — 21 tests in 11 suites passed; 0 failures.
+- Bottom-tab demo build: `xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/thinking-orbs-tabs-build` — passed.
+- Bottom-tab demo UI tests: `xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -only-testing:ThinkingOrbsDemoUITests -derivedDataPath /private/tmp/thinking-orbs-tabs-green` — 2 tests passed; default gallery tab and Playground settings sheet covered.
 - Simulator: iPhone 17 Pro on iOS 26.5. Appearance and physical-device Instruments inspection were not performed.
 
 ## Decisions and risks

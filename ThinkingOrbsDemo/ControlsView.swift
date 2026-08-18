@@ -13,7 +13,7 @@ struct ControlsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section {
+                Section("Animation") {
                     Picker("State", selection: $state) {
                         ForEach(OrbState.allCases, id: \.self) { value in
                             Text(value.accessibilityLabel).tag(value)
@@ -55,7 +55,7 @@ struct ControlsView: View {
                     Toggle("Reduce Motion Preview", isOn: $forcedReduceMotion)
                 }
             }
-            .navigationTitle("Controls")
+            .navigationTitle("Animation & Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

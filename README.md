@@ -56,7 +56,7 @@ Two independently tuned sizes are available: `.points20` for inline use and `.po
 
 ## Demo
 
-Open `ThinkingOrbsDemo.xcodeproj` and run the `ThinkingOrbsDemo` scheme on an iPhone simulator. The demo includes a live preview, 20-point comparison, a native Controls sheet for state/size/theme/speed/pause/Reduce Motion preview, and an all-state gallery.
+Open `ThinkingOrbsDemo.xcodeproj` and run the `ThinkingOrbsDemo` scheme on an iPhone or iPad simulator. The demo opens to an all-state gallery and includes a Playground tab with a centered preview plus a native settings sheet for state, size, theme, speed, pause, and Reduce Motion preview. Its grid, navigation, and settings width adapt to compact, regular, split-view, and windowed layouts.
 
 The project is maintained as native Xcode project files. No project generator is required.
 

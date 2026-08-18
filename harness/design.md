@@ -2,7 +2,7 @@
 
 ## Product goal
 
-ThinkingOrbsKit is an independent Swift Package that ports every animation from Jakub Antalik's MIT-licensed `thinking-orbs` project to native SwiftUI. It provides one small public component for iPhone applications and a companion demo app for inspecting every supported state and tuning.
+ThinkingOrbsKit is an independent Swift Package that ports every animation from Jakub Antalik's MIT-licensed `thinking-orbs` project to native SwiftUI. It provides one small public component for iOS applications and a companion demo app for inspecting every supported state and tuning.
 
 The first release targets iOS 15 and later. macOS support is intentionally deferred and must appear in `TODO.md` rather than being partially advertised or conditionally compiled in version 0.1.
 
@@ -37,7 +37,7 @@ It does not remain nested in Photo Coach and does not depend on Photo Coach type
 - Default state-specific accessibility labels with a caller override.
 - Shared clock semantics so multiple visible instances remain synchronized.
 - Golden-vector parity tests derived from the upstream spec and fixtures.
-- A native iPhone demo app with a controls sheet and all-state gallery.
+- A native iPhone and iPad demo app with a controls sheet and all-state gallery.
 - MIT licensing, attribution, upstream revision tracking, and release documentation.
 - A dedicated `harness/` folder containing project guidance and handoff state.
 
@@ -210,13 +210,14 @@ The root `LICENSE` preserves the upstream MIT license and copyright notice. `REA
 
 ## Demo application
 
-`ThinkingOrbsDemo` is a checked-in native iPhone Xcode project targeting iOS 15 or later and depending on the sibling package through a local package reference.
+`ThinkingOrbsDemo` is a checked-in native iPhone and iPad Xcode project targeting iOS 15 or later and depending on the sibling package through a local package reference.
 
 The app uses a native bottom tab bar with **All Animations** selected by default and **Playground** as the second tab.
 
 - **All Animations** presents all nine states in an adaptive grid for quick parity inspection.
 - **Playground** centers a large live preview using the selected state, size, theme, speed, pause, and Reduce Motion settings.
 - A bottom-anchored **Settings** button in Playground presents the animation picker and settings in a native sheet. On iOS 16 and later the sheet supports medium and large detents; iOS 15 uses the standard sheet presentation.
+- On iPad, the gallery is centered at a readable maximum width, navigation remains single-column inside each tab, and the settings form is bounded to avoid overlong controls. All four iPad orientations are supported, including windowed and split-view size changes.
 
 The Playground settings sheet uses native SwiftUI controls:
 
@@ -272,9 +273,10 @@ Normal verification remains offline and deterministic:
 ```bash
 xcodebuild test -quiet -scheme ThinkingOrbsKit -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
 xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator'
+xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=latest' -only-testing:ThinkingOrbsDemoUITests
 ```
 
-The package tests must compile and run for an iPhone simulator without warnings under strict concurrency checking. The demo must build for an iPhone simulator without a network dependency after package resolution. Host `swift test` is not the version 0.1 acceptance command because macOS support is deferred.
+The package tests must compile and run for an iOS simulator without warnings under strict concurrency checking. The demo must build for iPhone and iPad without a network dependency after package resolution. Host `swift test` is not the version 0.1 acceptance command because macOS support is deferred.
 
 ### Performance sanity
 
@@ -300,7 +302,7 @@ It also records optional future snapshot/pixel-diff tooling. Neither item blocks
 - The public API renders all nine states at both 20-point and 64-point tuned sizes.
 - Theme, speed, pause, Reduce Motion, shared-clock, and accessibility behavior match this design.
 - Every vendored upstream golden case passes within `1e-4` for dots and lines.
-- The iPhone demo project builds and its controls sheet exercises every public option.
+- The iPhone and iPad demo project builds and its controls sheet exercises every public option.
 - The demo gallery presents all nine states.
 - `harness/` contains valid features, design, ADR, and handoff documents, and root `AGENTS.md` routes contributors to them.
 - macOS support is documented in `TODO.md` and is not claimed by version 0.1.

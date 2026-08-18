@@ -88,6 +88,7 @@ private struct PlaygroundView: View {
             .padding()
             .navigationTitle("Playground")
         }
+        .navigationViewStyle(.stack)
         .sheet(isPresented: $showsSettings) {
             settingsSheet
         }

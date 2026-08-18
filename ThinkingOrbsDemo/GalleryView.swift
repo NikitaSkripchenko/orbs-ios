@@ -5,7 +5,9 @@ struct GalleryView: View {
     let theme: OrbTheme
     let forcedReduceMotion: Bool
 
-    private let columns = [GridItem(.adaptive(minimum: 120), spacing: 24)]
+    private let columns = [
+        GridItem(.adaptive(minimum: 144, maximum: 200), spacing: 24)
+    ]
 
     var body: some View {
         NavigationView {
@@ -25,8 +27,11 @@ struct GalleryView: View {
                     }
                 }
                 .padding()
+                .frame(maxWidth: 992)
+                .frame(maxWidth: .infinity)
             }
             .navigationTitle("All Animations")
         }
+        .navigationViewStyle(.stack)
     }
 }

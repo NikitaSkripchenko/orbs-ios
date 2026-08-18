@@ -21,13 +21,14 @@
     { "id": "swiftui-renderer", "status": "complete" },
     { "id": "demo-controls", "status": "complete" },
     { "id": "demo-gallery", "status": "complete" },
+    { "id": "demo-ipad", "status": "complete" },
     { "id": "documentation", "status": "complete" }
   ],
   "acceptanceCriteria": [
     "The package builds for an iOS 15 or newer simulator.",
     "All nine states match the pinned upstream golden vectors at both tuned sizes.",
     "Theme, speed, pause, Reduce Motion, shared-clock, and accessibility behavior are implemented.",
-    "The native demo project builds and exposes a controls sheet and all-state gallery.",
+    "The native iPhone and iPad demo builds and exposes a controls sheet and all-state gallery.",
     "No runtime or project-generator dependency is required.",
     "macOS support is documented as future work and is not claimed by version 0.1."
   ]

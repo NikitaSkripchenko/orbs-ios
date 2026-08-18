@@ -8,6 +8,18 @@ enum OrbInk {
 }
 
 enum OrbRenderBehavior {
+    static func accessibilityLabel(custom: String?, state: OrbState) -> String {
+        custom ?? state.accessibilityLabel
+    }
+
+    static func isTimelinePaused(
+        paused: Bool,
+        reduceMotion: Bool,
+        userSpeed: Double
+    ) -> Bool {
+        paused || reduceMotion || OrbEngine.normalizedSpeed(userSpeed) == 0
+    }
+
     static func modeTime(
         date: Date,
         reduceMotion: Bool,
@@ -24,6 +36,10 @@ enum OrbRenderBehavior {
 #if os(iOS)
 import SwiftUI
 
+/// A deterministic, accessible SwiftUI thinking animation.
+///
+/// Use an orb as a decorative status indicator while nearby interface text explains
+/// the operation in more detail.
 public struct ThinkingOrb: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
@@ -36,6 +52,18 @@ public struct ThinkingOrb: View {
     private let reduceMotionOverride: Bool?
     private let customAccessibilityLabel: String?
 
+    /// Creates a thinking orb.
+    ///
+    /// - Parameters:
+    ///   - state: The semantic activity and animation mode.
+    ///   - size: One of the two tuned upstream sizes.
+    ///   - theme: Automatic or explicit monochrome appearance.
+    ///   - speed: A multiplier for the preset speed. Nonfinite values use `1` and
+    ///     negative values clamp to `0`.
+    ///   - paused: Whether to stop timeline updates at the current shared-clock phase.
+    ///   - reduceMotionOverride: A testing and demo override. Pass `nil` in production
+    ///     to respect the system Reduce Motion setting.
+    ///   - accessibilityLabel: A custom VoiceOver label, or `nil` for the state's default.
     public init(
         state: OrbState = .working,
         size: OrbSize = .points64,
@@ -57,9 +85,14 @@ public struct ThinkingOrb: View {
     public var body: some View {
         let resolved = OrbSpec.resolve(state: state, size: size)
         let effectiveReduceMotion = reduceMotionOverride ?? reduceMotion
+        let timelinePaused = OrbRenderBehavior.isTimelinePaused(
+            paused: paused,
+            reduceMotion: effectiveReduceMotion,
+            userSpeed: speed
+        )
         TimelineView(.animation(
             minimumInterval: 1.0 / 60.0,
-            paused: paused || effectiveReduceMotion
+            paused: timelinePaused
         )) { timeline in
             Canvas { context, _ in
                 let modeTime = OrbRenderBehavior.modeTime(
@@ -68,7 +101,11 @@ public struct ThinkingOrb: View {
                     presetSpeed: resolved.speed,
                     userSpeed: speed
                 )
-                let frame = OrbEngine.frame(state: state, size: size, modeTime: modeTime)
+                let frame = OrbEngine.frame(
+                    resolved: resolved,
+                    size: size,
+                    modeTime: modeTime
+                )
                 let dark = resolvedDarkTheme
 
                 for line in frame.lines {
@@ -98,7 +135,10 @@ public struct ThinkingOrb: View {
         }
         .frame(width: CGFloat(size.rawValue), height: CGFloat(size.rawValue))
         .accessibilityElement()
-        .accessibilityLabel(customAccessibilityLabel ?? state.accessibilityLabel)
+        .accessibilityLabel(OrbRenderBehavior.accessibilityLabel(
+            custom: customAccessibilityLabel,
+            state: state
+        ))
         .accessibilityAddTraits(.isImage)
     }
 

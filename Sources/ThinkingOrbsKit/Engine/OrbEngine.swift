@@ -12,6 +12,14 @@ enum OrbEngine {
         modeTime: Double
     ) -> OrbFrame {
         let resolved = OrbSpec.resolve(state: state, size: size)
+        return frame(resolved: resolved, size: size, modeTime: modeTime)
+    }
+
+    static func frame(
+        resolved: ResolvedPreset,
+        size: OrbSize,
+        modeTime: Double
+    ) -> OrbFrame {
         switch resolved.mode {
         case .orbits:
             return frameOrbits(size: size.rawValue, time: modeTime, options: resolved.options)

@@ -10,6 +10,14 @@ struct RendererBehaviorTests {
         #expect(OrbInk.gray(white: -1, dark: true) == 1)
     }
 
+    @Test func resolvesDefaultAndCustomAccessibilityLabels() {
+        #expect(OrbRenderBehavior.accessibilityLabel(custom: nil, state: .searching) == "Searching…")
+        #expect(OrbRenderBehavior.accessibilityLabel(
+            custom: "Finding similar photos",
+            state: .searching
+        ) == "Finding similar photos")
+    }
+
     @Test func reduceMotionUsesPinnedStaticModeTime() {
         #expect(
             OrbRenderBehavior.modeTime(
@@ -23,8 +31,42 @@ struct RendererBehaviorTests {
 
     @Test func normalizesInvalidSpeed() {
         #expect(OrbEngine.normalizedSpeed(.nan) == 1)
+        #expect(OrbEngine.normalizedSpeed(.infinity) == 1)
         #expect(OrbEngine.normalizedSpeed(-2) == 0)
         #expect(OrbEngine.normalizedSpeed(1.5) == 1.5)
+    }
+
+    @Test func pausesTimelineWhenFramesCannotAdvance() {
+        #expect(OrbRenderBehavior.isTimelinePaused(
+            paused: false,
+            reduceMotion: false,
+            userSpeed: 0
+        ))
+        #expect(OrbRenderBehavior.isTimelinePaused(
+            paused: false,
+            reduceMotion: false,
+            userSpeed: -1
+        ))
+        #expect(OrbRenderBehavior.isTimelinePaused(
+            paused: true,
+            reduceMotion: false,
+            userSpeed: 1
+        ))
+        #expect(OrbRenderBehavior.isTimelinePaused(
+            paused: false,
+            reduceMotion: true,
+            userSpeed: 1
+        ))
+        #expect(!OrbRenderBehavior.isTimelinePaused(
+            paused: false,
+            reduceMotion: false,
+            userSpeed: .nan
+        ))
+        #expect(!OrbRenderBehavior.isTimelinePaused(
+            paused: false,
+            reduceMotion: false,
+            userSpeed: 1
+        ))
     }
 
     @Test func runningModeUsesPresetAndUserSpeed() {
@@ -37,5 +79,17 @@ struct RendererBehaviorTests {
                 userSpeed: 2
             ) == 12
         )
+    }
+
+    @Test func resolvedPresetFrameMatchesPublicDispatchPath() {
+        let resolved = OrbSpec.resolve(state: .working, size: .points64)
+        let expected = OrbEngine.frame(state: .working, size: .points64, modeTime: 1.25)
+        let actual = OrbEngine.frame(
+            resolved: resolved,
+            size: .points64,
+            modeTime: 1.25
+        )
+
+        #expect(actual == expected)
     }
 }

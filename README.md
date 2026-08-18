@@ -1,5 +1,12 @@
 # ThinkingOrbsKit
 
+
+
+https://github.com/user-attachments/assets/a5c88253-bae6-49f3-a2ce-4743f8f1ebb5
+
+
+
+
 ThinkingOrbsKit is a native SwiftUI port of all nine dotted thought-orb animations from [thinking-orbs](https://github.com/Jakubantalik/thinking-orbs).
 
 Version 0.1 targets iOS 15 and later. macOS support is intentionally deferred and tracked in `TODO.md`.

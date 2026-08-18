@@ -21,10 +21,11 @@ final class ThinkingOrbsDemoUITests: XCTestCase {
 
         tab(named: "Playground", in: app).tap()
         let orb = app.descendants(matching: .any)["playgroundOrb"]
-        let settingsButton = app.buttons["Settings"]
+        let settingsPanel = app.descendants(matching: .any)["inlineSettingsPanel"]
         XCTAssertTrue(orb.waitForExistence(timeout: 2))
-        XCTAssertTrue(settingsButton.waitForExistence(timeout: 2))
-        XCTAssertEqual(orb.frame.midX, settingsButton.frame.midX, accuracy: 2)
+        XCTAssertTrue(settingsPanel.waitForExistence(timeout: 2))
+        XCTAssertFalse(app.buttons["Settings"].exists)
+        XCTAssertGreaterThan(settingsPanel.frame.minX, orb.frame.midX)
     }
 
     func testAllAnimationsIsTheDefaultTabAndShowsEveryState() {
@@ -41,7 +42,7 @@ final class ThinkingOrbsDemoUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Shaping"].exists)
     }
 
-    func testPlaygroundCentersPreviewAndSettingsSheetExposesEveryPublicOption() {
+    func testPlaygroundCentersPreviewAndAdaptiveSettingsExposeEveryPublicOption() {
         let app = XCUIApplication()
         app.launch()
 
@@ -49,8 +50,13 @@ final class ThinkingOrbsDemoUITests: XCTestCase {
         XCTAssertTrue(playgroundTab.waitForExistence(timeout: 2))
         playgroundTab.tap()
         XCTAssertTrue(app.descendants(matching: .any)["playgroundOrb"].waitForExistence(timeout: 2))
-        XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 2))
-        app.buttons["Settings"].tap()
+
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            XCTAssertTrue(app.descendants(matching: .any)["inlineSettingsPanel"].waitForExistence(timeout: 2))
+        } else {
+            XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 2))
+            app.buttons["Settings"].tap()
+        }
 
         for identifier in ["statePicker", "sizePicker", "themePicker", "speedSlider"] {
             XCTAssertTrue(app.descendants(matching: .any)[identifier].waitForExistence(timeout: 2))

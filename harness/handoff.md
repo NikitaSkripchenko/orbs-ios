@@ -19,8 +19,9 @@
 - Public SwiftUI `ThinkingOrb` using `TimelineView` and `Canvas`.
 - Automatic/light/dark themes, speed, pause, Reduce Motion, accessibility labels, and demo-only `reduceMotionOverride`.
 - Native manually maintained `ThinkingOrbsDemo.xcodeproj` with controls sheet, all-state gallery, and UI tests. No XcodeGen.
-- Demo navigation now uses a native two-item bottom tab bar. **All Animations** is the default tab; **Playground** centers the selected orb and presents its animation picker and settings in a bottom sheet.
+- Demo navigation now uses a native two-item bottom tab bar. **All Animations** is the default tab; **Playground** centers the selected orb and exposes adaptive animation settings.
 - The demo now declares native iPhone and iPad device families. Its gallery, navigation, settings form, orientations, and cross-device UI tests adapt to compact and regular widths.
+- Regular-width iPad Playground now splits into a flexible orb preview and a persistent 320–420 point settings pane. iPhone and compact-width iPad retain the settings sheet.
 - MIT license, upstream provenance, README, ADRs, TODO, and machine-readable harness status.
 
 ## Verification
@@ -38,7 +39,13 @@
 - Universal demo build: `xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/thinking-orbs-ipad-build` — passed; built `UIDeviceFamily` contains iPhone (`1`) and iPad (`2`).
 - iPad UI tests: `xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=latest' -only-testing:ThinkingOrbsDemoUITests -derivedDataPath /private/tmp/thinking-orbs-ipad-green-3` — 3 tests passed; native device family, multi-row gallery density, Playground centering, and settings coverage verified.
 - iPhone regression UI tests: `xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -only-testing:ThinkingOrbsDemoUITests -derivedDataPath /private/tmp/thinking-orbs-ipad-iphone-green` — 3 tests passed.
-- Simulator: iPhone 17 Pro on iOS 26.5. Appearance and physical-device Instruments inspection were not performed.
+- Split Playground build: `xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/thinking-orbs-ipad-split-build` — passed.
+- Split Playground iPad UI tests: `xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=latest' -only-testing:ThinkingOrbsDemoUITests -derivedDataPath /private/tmp/thinking-orbs-ipad-split-green` — 3 tests passed; persistent trailing settings pane, no redundant Settings button, control availability, gallery density, and preview/pane geometry covered.
+- Split Playground iPhone UI tests: `xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -only-testing:ThinkingOrbsDemoUITests -derivedDataPath /private/tmp/thinking-orbs-ipad-split-iphone-green` — 3 tests passed; compact settings sheet behavior retained.
+- Final split Playground package verification: `swift test --scratch-path /private/tmp/thinking-orbs-kit-ipad-split-swift-build` — 24 tests in 12 suites passed; 0 failures. Existing `PerformanceBudgetTests` compiler warnings remain unrelated to this UI change.
+- Reference-size iPad UI tests: `xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5),OS=latest' -only-testing:ThinkingOrbsDemoUITests -derivedDataPath /private/tmp/thinking-orbs-ipad-split-11-green` — 3 tests passed.
+- Final iPhone UI regression: `xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -only-testing:ThinkingOrbsDemoUITests -derivedDataPath /private/tmp/thinking-orbs-ipad-split-iphone-final` — 3 tests passed.
+- Simulators: iPhone 17 Pro plus iPad Pro 11-inch and 13-inch on iOS 26.5. Physical-device Instruments inspection was not performed.
 
 ## Decisions and risks
 

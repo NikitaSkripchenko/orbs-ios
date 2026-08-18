@@ -37,7 +37,7 @@ It does not remain nested in Photo Coach and does not depend on Photo Coach type
 - Default state-specific accessibility labels with a caller override.
 - Shared clock semantics so multiple visible instances remain synchronized.
 - Golden-vector parity tests derived from the upstream spec and fixtures.
-- A native iPhone and iPad demo app with a controls sheet and all-state gallery.
+- A native iPhone and iPad demo app with adaptive settings controls and an all-state gallery.
 - MIT licensing, attribution, upstream revision tracking, and release documentation.
 - A dedicated `harness/` folder containing project guidance and handoff state.
 
@@ -216,10 +216,11 @@ The app uses a native bottom tab bar with **All Animations** selected by default
 
 - **All Animations** presents all nine states in an adaptive grid for quick parity inspection.
 - **Playground** centers a large live preview using the selected state, size, theme, speed, pause, and Reduce Motion settings.
-- A bottom-anchored **Settings** button in Playground presents the animation picker and settings in a native sheet. On iOS 16 and later the sheet supports medium and large detents; iOS 15 uses the standard sheet presentation.
-- On iPad, the gallery is centered at a readable maximum width, navigation remains single-column inside each tab, and the settings form is bounded to avoid overlong controls. All four iPad orientations are supported, including windowed and split-view size changes.
+- On iPhone and compact-width iPad windows, a bottom-anchored **Settings** button presents the animation picker and settings in a native sheet. On iOS 16 and later the sheet supports medium and large detents; iOS 15 uses the standard sheet presentation.
+- On regular-width iPad, Playground uses a split layout: the orb stays centered in the flexible preview pane and the same settings form remains visible in a 320–420 point trailing pane. The divider and grouped background clarify the two regions without adding modal navigation.
+- The gallery is centered at a readable maximum width, navigation remains single-column inside each tab, and all four iPad orientations are supported, including windowed and split-view size changes.
 
-The Playground settings sheet uses native SwiftUI controls:
+Both Playground settings presentations use the same native SwiftUI controls:
 
 - state picker for all nine states;
 - segmented size picker for 20 and 64 points;
@@ -228,7 +229,7 @@ The Playground settings sheet uses native SwiftUI controls:
 - paused toggle; and
 - forced Reduce Motion preview toggle applied only through the demo-only `reduceMotionOverride` parameter.
 
-The sheet uses a navigation title, Done action, semantic styles, Dynamic Type, and scrollable content at large accessibility sizes. Demo state is in memory only.
+The compact sheet uses a navigation title and Done action. The regular-width pane uses a persistent Settings header. Both use semantic styles, Dynamic Type, and scrollable content at large accessibility sizes. Demo state is in memory only.
 
 ## Harness files
 
@@ -302,7 +303,7 @@ It also records optional future snapshot/pixel-diff tooling. Neither item blocks
 - The public API renders all nine states at both 20-point and 64-point tuned sizes.
 - Theme, speed, pause, Reduce Motion, shared-clock, and accessibility behavior match this design.
 - Every vendored upstream golden case passes within `1e-4` for dots and lines.
-- The iPhone and iPad demo project builds and its controls sheet exercises every public option.
+- The iPhone and iPad demo project builds and its adaptive settings presentations exercise every public option.
 - The demo gallery presents all nine states.
 - `harness/` contains valid features, design, ADR, and handoff documents, and root `AGENTS.md` routes contributors to them.
 - macOS support is documented in `TODO.md` and is not claimed by version 0.1.

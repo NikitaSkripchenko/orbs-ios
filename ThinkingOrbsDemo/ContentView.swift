@@ -1,5 +1,6 @@
 import SwiftUI
 import ThinkingOrbsKit
+import UIKit
 
 struct ContentView: View {
     private enum Tab: Hashable {
@@ -40,6 +41,8 @@ struct ContentView: View {
 }
 
 private struct PlaygroundView: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
     @Binding var state: OrbState
     @Binding var size: OrbSize
     @Binding var theme: OrbTheme
@@ -51,47 +54,110 @@ private struct PlaygroundView: View {
 
     var body: some View {
         NavigationView {
-            ZStack {
-                VStack(spacing: 16) {
-                    ThinkingOrb(
-                        state: state,
-                        size: size,
-                        theme: theme,
-                        speed: speed,
-                        paused: paused,
-                        reduceMotionOverride: forcedReduceMotion
-                    )
-                    .accessibilityIdentifier("playgroundOrb")
+            Group {
+                if usesInlineSettings {
+                    GeometryReader { proxy in
+                        HStack(spacing: 0) {
+                            preview
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .padding(32)
 
-                    Text(state.accessibilityLabel)
-                        .font(.headline)
+                            Divider()
 
-                    Text("\(Int(size.rawValue)) pt · \(theme.rawValue.capitalized)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                VStack {
-                    Spacer()
-
-                    Button {
-                        showsSettings = true
-                    } label: {
-                        Label("Settings", systemImage: "slider.horizontal.3")
-                            .frame(maxWidth: .infinity)
+                            inlineSettings
+                                .frame(width: settingsWidth(for: proxy.size.width))
+                        }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .frame(maxWidth: 520)
+                } else {
+                    ZStack {
+                        preview
+
+                        VStack {
+                            Spacer()
+
+                            Button {
+                                showsSettings = true
+                            } label: {
+                                Label("Settings", systemImage: "slider.horizontal.3")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.large)
+                            .frame(maxWidth: 520)
+                        }
+                    }
+                    .padding()
                 }
             }
-            .padding()
             .navigationTitle("Playground")
         }
         .navigationViewStyle(.stack)
         .sheet(isPresented: $showsSettings) {
             settingsSheet
         }
+        .onChange(of: horizontalSizeClass) { _ in
+            if usesInlineSettings {
+                showsSettings = false
+            }
+        }
+    }
+
+    private var usesInlineSettings: Bool {
+        UIDevice.current.userInterfaceIdiom == .pad && horizontalSizeClass == .regular
+    }
+
+    private var preview: some View {
+        VStack(spacing: 16) {
+            ThinkingOrb(
+                state: state,
+                size: size,
+                theme: theme,
+                speed: speed,
+                paused: paused,
+                reduceMotionOverride: forcedReduceMotion
+            )
+            .accessibilityIdentifier("playgroundOrb")
+
+            Text(state.accessibilityLabel)
+                .font(.headline)
+
+            Text("\(Int(size.rawValue)) pt · \(theme.rawValue.capitalized)")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var inlineSettings: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                Image(systemName: "slider.horizontal.3")
+                    .foregroundStyle(.tint)
+                Text("Settings")
+                    .font(.title2.bold())
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+
+            Divider()
+
+            ControlsForm(
+                state: $state,
+                size: $size,
+                theme: $theme,
+                speed: $speed,
+                paused: $paused,
+                forcedReduceMotion: $forcedReduceMotion
+            )
+        }
+        .background(Color(uiColor: .systemGroupedBackground))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("inlineSettingsPanel")
+    }
+
+    private func settingsWidth(for availableWidth: CGFloat) -> CGFloat {
+        min(max(availableWidth * 0.38, 320), 420)
     }
 
     @ViewBuilder

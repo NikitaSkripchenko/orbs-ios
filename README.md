@@ -28,6 +28,17 @@ ThinkingOrb(
 )
 ```
 
+## Installation with an LLM agent
+
+Copy this prompt into your coding agent after making this repository available beside your SwiftUI app. Replace the package path and target name as needed:
+
+```text
+Integrate ThinkingOrbsKit into this SwiftUI iOS app.
+
+1. Inspect the project first and identify the app target and its existing Swift Package dependency pattern.
+2. Add the local package at <path-to-ThinkingOrbsKit> and link the ThinkingOrbsKit product to the <app-target-name> target. Do not invent a remote package URL.
+```
+
 ## States and sizes
 
 | State | Motion | Default label |

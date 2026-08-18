@@ -12,6 +12,8 @@
 		A10000000000000000000003 /* ThinkingOrbsDemoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004 /* ThinkingOrbsDemoUITests.swift */; };
 		A10000000000000000000004 /* ControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000007 /* ControlsView.swift */; };
 		A10000000000000000000005 /* GalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008 /* GalleryView.swift */; };
+		A10000000000000000000006 /* ThinkingOrbsKitPublicAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009 /* ThinkingOrbsKitPublicAPITests.swift */; };
+		A10000000000000000000007 /* ThinkingOrbAccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* ThinkingOrbAccessibilityUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,18 +35,23 @@
 		B10000000000000000000006 /* ThinkingOrbsDemoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThinkingOrbsDemoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10000000000000000000007 /* ControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlsView.swift; sourceTree = "<group>"; };
 		B10000000000000000000008 /* GalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryView.swift; sourceTree = "<group>"; };
+		B10000000000000000000009 /* ThinkingOrbsKitPublicAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThinkingOrbsKitPublicAPITests.swift; sourceTree = "<group>"; };
+		B10000000000000000000010 /* ThinkingOrbsKitIOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThinkingOrbsKitIOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000011 /* ThinkingOrbAccessibilityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThinkingOrbAccessibilityUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		F10000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 		F10000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		F10000000000000000000003 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		G10000000000000000000001 = {isa = PBXGroup; children = (G10000000000000000000002, G10000000000000000000003, G10000000000000000000004); sourceTree = "<group>"; };
+		G10000000000000000000001 = {isa = PBXGroup; children = (G10000000000000000000002, G10000000000000000000003, G10000000000000000000005, G10000000000000000000004); sourceTree = "<group>"; };
 		G10000000000000000000002 /* ThinkingOrbsDemo */ = {isa = PBXGroup; children = (B10000000000000000000001, B10000000000000000000002, B10000000000000000000007, B10000000000000000000008, B10000000000000000000003); path = ThinkingOrbsDemo; sourceTree = "<group>"; };
-		G10000000000000000000003 /* ThinkingOrbsDemoUITests */ = {isa = PBXGroup; children = (B10000000000000000000004); path = ThinkingOrbsDemoUITests; sourceTree = "<group>"; };
-		G10000000000000000000004 /* Products */ = {isa = PBXGroup; children = (B10000000000000000000005, B10000000000000000000006); name = Products; sourceTree = "<group>"; };
+		G10000000000000000000003 /* ThinkingOrbsDemoUITests */ = {isa = PBXGroup; children = (B10000000000000000000004, B10000000000000000000011); path = ThinkingOrbsDemoUITests; sourceTree = "<group>"; };
+		G10000000000000000000004 /* Products */ = {isa = PBXGroup; children = (B10000000000000000000005, B10000000000000000000006, B10000000000000000000010); name = Products; sourceTree = "<group>"; };
+		G10000000000000000000005 /* ThinkingOrbsKitIOSTests */ = {isa = PBXGroup; children = (B10000000000000000000009); path = ThinkingOrbsKitIOSTests; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -60,12 +67,18 @@
 			buildPhases = (F20000000000000000000002, F10000000000000000000002);
 			buildRules = (); dependencies = (C10000000000000000000002); name = ThinkingOrbsDemoUITests; packageProductDependencies = (); productName = ThinkingOrbsDemoUITests; productReference = B10000000000000000000006; productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		E10000000000000000000003 /* ThinkingOrbsKitIOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = H10000000000000000000003;
+			buildPhases = (F20000000000000000000003, F10000000000000000000003);
+			buildRules = (); dependencies = (); name = ThinkingOrbsKitIOSTests; packageProductDependencies = (P10000000000000000000001); productName = ThinkingOrbsKitIOSTests; productReference = B10000000000000000000010; productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		D10000000000000000000001 /* Project object */ = {
 			isa = PBXProject;
-			attributes = { LastUpgradeCheck = 2650; TargetAttributes = { E10000000000000000000001 = { CreatedOnToolsVersion = 26.5; }; E10000000000000000000002 = { CreatedOnToolsVersion = 26.5; TestTargetID = E10000000000000000000001; }; }; };
+			attributes = { LastUpgradeCheck = 2650; TargetAttributes = { E10000000000000000000001 = { CreatedOnToolsVersion = 26.5; }; E10000000000000000000002 = { CreatedOnToolsVersion = 26.5; TestTargetID = E10000000000000000000001; }; E10000000000000000000003 = { CreatedOnToolsVersion = 26.5; }; }; };
 			buildConfigurationList = H20000000000000000000001;
 			compatibilityVersion = "Xcode 16.0";
 			developmentRegion = en;
@@ -76,7 +89,7 @@
 			productRefGroup = G10000000000000000000004;
 			projectDirPath = "";
 			projectRoot = "";
-			targets = (E10000000000000000000001, E10000000000000000000002);
+			targets = (E10000000000000000000001, E10000000000000000000002, E10000000000000000000003);
 		};
 /* End PBXProject section */
 
@@ -86,7 +99,8 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		F20000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000004, A10000000000000000000005); runOnlyForDeploymentPostprocessing = 0; };
-		F20000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000003); runOnlyForDeploymentPostprocessing = 0; };
+		F20000000000000000000002 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000003, A10000000000000000000007); runOnlyForDeploymentPostprocessing = 0; };
+		F20000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000006); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -100,12 +114,15 @@
 		H30000000000000000000004 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ARCHS = arm64; CODE_SIGN_STYLE = Automatic; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ThinkingOrbsDemo/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.thinkingorbs.demo; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
 		H30000000000000000000005 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { ARCHS = arm64; BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ThinkingOrbsDemo.app/ThinkingOrbsDemo"; CODE_SIGN_STYLE = Automatic; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.thinkingorbs.demoUITests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; TEST_TARGET_NAME = ThinkingOrbsDemo; }; name = Debug; };
 		H30000000000000000000006 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ARCHS = arm64; BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/ThinkingOrbsDemo.app/ThinkingOrbsDemo"; CODE_SIGN_STYLE = Automatic; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.thinkingorbs.demoUITests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; TEST_TARGET_NAME = ThinkingOrbsDemo; }; name = Release; };
+		H30000000000000000000007 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { ARCHS = arm64; CODE_SIGN_STYLE = Automatic; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.thinkingorbs.kitIOSTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Debug; };
+		H30000000000000000000008 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ARCHS = arm64; CODE_SIGN_STYLE = Automatic; SDKROOT = iphoneos; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 15.0; PRODUCT_BUNDLE_IDENTIFIER = com.thinkingorbs.kitIOSTests; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 6.0; TARGETED_DEVICE_FAMILY = "1,2"; }; name = Release; };
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
 		H20000000000000000000001 /* Project */ = {isa = XCConfigurationList; buildConfigurations = (H30000000000000000000001, H30000000000000000000002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 		H10000000000000000000001 /* App */ = {isa = XCConfigurationList; buildConfigurations = (H30000000000000000000003, H30000000000000000000004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 		H10000000000000000000002 /* UI Tests */ = {isa = XCConfigurationList; buildConfigurations = (H30000000000000000000005, H30000000000000000000006); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		H10000000000000000000003 /* iOS API Tests */ = {isa = XCConfigurationList; buildConfigurations = (H30000000000000000000007, H30000000000000000000008); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */

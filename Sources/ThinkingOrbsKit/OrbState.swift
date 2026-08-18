@@ -1,3 +1,4 @@
+/// The semantic activity represented by a thinking orb.
 public enum OrbState: String, CaseIterable, Hashable, Sendable {
     case working
     case searching
@@ -9,6 +10,7 @@ public enum OrbState: String, CaseIterable, Hashable, Sendable {
     case breathing
     case shaping
 
+    /// The default VoiceOver label for the state.
     public var accessibilityLabel: String {
         switch self {
         case .working: "Working…"

@@ -48,3 +48,10 @@ Maintain `ThinkingOrbsDemo.xcodeproj` directly. Do not introduce XcodeGen or ano
 - Date: 2026-08-17
 
 Swift and JavaScript standard-library math can produce different sub-tolerance signed-zero ordering for dots at exactly equal depth. The engine still emits dots monotonically far-to-near. Golden tests compare dot geometry as a unique multiset within `1e-4` and separately assert monotonic depth order; line order remains strict.
+
+## ADR-008: Dedicated iOS consumer test target
+
+- Status: Accepted
+- Date: 2026-08-18
+
+Keep deterministic geometry tests in the Swift Package test target and verify the iOS-only public SwiftUI surface from the checked-in `ThinkingOrbsKitIOSTests` Xcode target. The target imports `ThinkingOrbsKit` without `@testable`, so public API availability is tested from a consumer's perspective without claiming macOS support.

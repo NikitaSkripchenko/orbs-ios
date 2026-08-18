@@ -4,7 +4,7 @@
 
 - Version: 0.1.0
 - Phase: iOS package and demo implementation complete
-- Branch: `feature/full-animation-port`
+- Branch: `main`
 - Platform: iOS 15+
 - macOS: deferred in `TODO.md`; not claimed by version 0.1
 - Upstream commit: `de85557ca220332586d070d8788c0e1d6e877a0d`
@@ -23,6 +23,10 @@
 - The demo now declares native iPhone and iPad device families. Its gallery, navigation, settings form, orientations, and cross-device UI tests adapt to compact and regular widths.
 - Regular-width iPad Playground now splits into a flexible orb preview and a persistent 320–420 point settings pane. iPhone and compact-width iPad retain the settings sheet.
 - MIT license, upstream provenance, README, ADRs, TODO, and machine-readable harness status.
+- Zero-speed timeline suspension and single-pass preset resolution in the renderer.
+- Dedicated iOS consumer-module API tests and rendered accessibility UI coverage.
+- Automated release performance, generated-source parity, iPhone/iPad UI, and secret checks in CI.
+- DocC, changelog, security policy, and contributor/release guidance.
 
 ## Verification
 
@@ -47,8 +51,21 @@
 - Final iPhone UI regression: `xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -only-testing:ThinkingOrbsDemoUITests -derivedDataPath /private/tmp/thinking-orbs-ipad-split-iphone-final` — 3 tests passed.
 - Simulators: iPhone 17 Pro plus iPad Pro 11-inch and 13-inch on iOS 26.5. Physical-device Instruments inspection was not performed.
 
+### Audit remediation verification — 2026-08-18
+
+- Package tests: `swift test --scratch-path /private/tmp/thinking-orbs-final-debug` — 25 tests in 12 suites passed; 0 failures.
+- Host engine/helper coverage: `swift test --enable-code-coverage` plus `llvm-cov report` — 99.67% line coverage; the iOS-only public view is covered separately by consumer and UI tests.
+- Release performance: `THINKING_ORBS_GALLERY_BUDGET_MS=2 swift test -c release --scratch-path /private/tmp/thinking-orbs-final-release --filter PerformanceBudgetTests` — passed in 0.078 seconds for 500 nine-orb ticks, approximately 0.156 milliseconds per tick.
+- iOS public API: `xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsKitIOSTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' -derivedDataPath /private/tmp/thinking-orbs-final-api-tests` — 3 tests passed.
+- Universal demo build: `xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/thinking-orbs-final-demo-build` — passed.
+- iPhone UI and accessibility: `xcodebuild test ... -only-testing:ThinkingOrbsDemoUITests` — 4 tests passed.
+- iPad adaptive UI and accessibility: `xcodebuild test ... -only-testing:ThinkingOrbsDemoUITests` — 4 tests passed.
+- DocC: `xcodebuild docbuild -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsKit -destination 'generic/platform=iOS Simulator'` — passed.
+- Secret scan: `Scripts/check-secrets.sh` — no high-confidence credential patterns found.
+
 ## Decisions and risks
 
 - The public renderer is wrapped in `#if os(iOS)` so host parity tests do not accidentally advertise macOS support. Add macOS only after the TODO checklist is completed.
 - Equal-depth dots can receive different sub-tolerance ordering across JavaScript and Swift math libraries. Tests compare each dot as a unique multiset within `1e-4` and separately require monotonic depth order; lines remain ordered strictly.
 - Manual visual, VoiceOver, and Instruments inspection remain release follow-ups. Automated golden parity, renderer behavior, and demo UI coverage are complete.
+- No git remote or release tag exists yet. Publishing version 0.1.0 remains an external release step after physical-device validation.

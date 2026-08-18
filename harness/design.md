@@ -74,10 +74,12 @@ ThinkingOrbsKit/
 │       │   ├── BraidEngine.swift
 │       │   ├── RibbonEngine.swift
 │       │   └── MorphEngine.swift
-│       └── Generated/
-│           └── OrbSpec.swift
+│       ├── Generated/
+│       │   └── OrbSpec.swift
+│       └── ThinkingOrbsKit.docc/
 ├── Tests/
 │   └── ThinkingOrbsKitTests/
+├── ThinkingOrbsKitIOSTests/
 ├── Upstream/
 │   ├── orbs-spec.json
 │   ├── orbs-golden.json
@@ -90,6 +92,9 @@ ThinkingOrbsKit/
 │   ├── adr.md
 │   └── handoff.md
 ├── AGENTS.md
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── SECURITY.md
 ├── TODO.md
 ├── README.md
 └── LICENSE
@@ -263,25 +268,30 @@ Every numeric value must match within `1e-4`, the upstream port tolerance. Missi
 - size-specific preset resolution;
 - light/dark ink mirroring;
 - speed normalization;
-- paused and Reduce Motion time resolution;
-- invalid/nonfinite internal geometry inputs; and
-- deterministic repeated frames.
+- timeline pausing for explicit pause, zero speed, and Reduce Motion;
+- default and custom accessibility-label resolution;
+- resolved-preset frame dispatch; and
+- an optimized all-state CPU geometry budget.
+
+### iOS public API tests
+
+The `ThinkingOrbsKitIOSTests` target imports the package without `@testable`. It builds the default view and every public state, size, theme, and initializer option on an iOS simulator. Demo UI tests verify that the rendered orb exposes its default image-like accessibility element.
 
 ### Build verification
 
 Normal verification remains offline and deterministic:
 
 ```bash
-xcodebuild test -quiet -scheme ThinkingOrbsKit -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
+xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsKitIOSTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
 xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator'
 xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=latest' -only-testing:ThinkingOrbsDemoUITests
 ```
 
-The package tests must compile and run for an iOS simulator without warnings under strict concurrency checking. The demo must build for iPhone and iPad without a network dependency after package resolution. Host `swift test` is not the version 0.1 acceptance command because macOS support is deferred.
+The deterministic engine suite runs with `swift test`; this does not claim macOS renderer support because the public view remains iOS-only. The consumer-module test target must compile and run on an iOS simulator without warnings under strict concurrency checking. The demo must build for iPhone and iPad without a network dependency after package resolution.
 
 ### Performance sanity
 
-The densest modes must render their expected bounded dot collections without I/O or unbounded allocation. A manual Instruments pass on a mid-range physical iPhone is a release check, not part of the normal automated suite.
+The optimized all-state gallery geometry must average less than 2 milliseconds per tick in CI. Zero or negative normalized speed pauses the animation schedule, and the renderer reuses its resolved preset. A manual Instruments pass on a mid-range physical iPhone remains a release check because automated geometry timing does not measure SwiftUI Canvas drawing or device energy use.
 
 ## TODO and future work
 

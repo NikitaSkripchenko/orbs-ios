@@ -23,6 +23,10 @@
     { "id": "demo-gallery", "status": "complete" },
     { "id": "demo-ipad", "status": "complete" },
     { "id": "demo-ipad-split-settings", "status": "complete" },
+    { "id": "ios-public-api-tests", "status": "complete" },
+    { "id": "performance-budget", "status": "complete" },
+    { "id": "ci-security-automation", "status": "complete" },
+    { "id": "docc", "status": "complete" },
     { "id": "documentation", "status": "complete" }
   ],
   "acceptanceCriteria": [
@@ -30,6 +34,8 @@
     "All nine states match the pinned upstream golden vectors at both tuned sizes.",
     "Theme, speed, pause, Reduce Motion, shared-clock, and accessibility behavior are implemented.",
     "The native iPhone and iPad demo builds and exposes adaptive settings controls and an all-state gallery.",
+    "Public API tests run from a consumer module on an iOS simulator.",
+    "CI enforces parity, performance, generated-source, UI, and secret checks.",
     "No runtime or project-generator dependency is required.",
     "macOS support is documented as future work and is not claimed by version 0.1."
   ]

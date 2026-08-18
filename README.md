@@ -60,6 +60,33 @@ Open `ThinkingOrbsDemo.xcodeproj` and run the `ThinkingOrbsDemo` scheme on an iP
 
 The project is maintained as native Xcode project files. No project generator is required.
 
+## Documentation
+
+- The package's DocC catalog contains a getting-started guide and complete symbol reference.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) contains local verification, upstream refresh, and release steps.
+- [`CHANGELOG.md`](CHANGELOG.md) records user-visible changes.
+- [`SECURITY.md`](SECURITY.md) defines the security boundary and private reporting expectations.
+
+## Verification
+
+Run deterministic package tests:
+
+```bash
+swift test
+```
+
+Run the public API tests on the supported iOS platform:
+
+```bash
+xcodebuild test -quiet \
+  -project ThinkingOrbsDemo.xcodeproj \
+  -scheme ThinkingOrbsKitIOSTests \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
+```
+
+The CI workflow also enforces optimized geometry performance, generated-source parity,
+iPhone/iPad UI behavior, and high-confidence credential scanning.
+
 ## Parity and provenance
 
 The package vendors `Upstream/orbs-spec.json` and `Upstream/orbs-golden.json` from upstream commit `de85557ca220332586d070d8788c0e1d6e877a0d` (upstream package `0.3.1`, spec `1.0.0`). The test suite compares all 72 frozen cases within `1e-4` for positions, depth, radius, ink, alpha, lines, and counts. Equal-depth dots are compared as a geometry multiset while the actual frame still must be monotonically sorted far-to-near; this avoids undefined cross-platform ordering when a depth is numerically equal.

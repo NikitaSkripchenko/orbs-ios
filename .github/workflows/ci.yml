@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Scan repository history for secrets
+        run: Scripts/check-secrets.sh
+
+      - name: Run package tests
+        run: swift test
+
+      - name: Enforce release performance budget
+        env:
+          THINKING_ORBS_GALLERY_BUDGET_MS: "2"
+        run: swift test -c release --filter PerformanceBudgetTests
+
+      - name: Verify generated presets
+        run: |
+          swift Scripts/generate-orb-spec.swift Upstream/orbs-spec.json "$RUNNER_TEMP/OrbSpec.swift"
+          diff -u Sources/ThinkingOrbsKit/Generated/OrbSpec.swift "$RUNNER_TEMP/OrbSpec.swift"
+
+      - name: Build universal demo
+        run: |
+          xcodebuild build -quiet \
+            -project ThinkingOrbsDemo.xcodeproj \
+            -scheme ThinkingOrbsDemo \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/demo-build"
+
+      - name: Select simulator destinations
+        run: |
+          iphone_id=$(xcrun simctl list devices available | awk -F '[()]' '/iPhone/{print $2; exit}')
+          ipad_id=$(xcrun simctl list devices available | awk -F '[()]' '/iPad/{print $2; exit}')
+          test -n "$iphone_id"
+          test -n "$ipad_id"
+          echo "IPHONE_DESTINATION=platform=iOS Simulator,id=$iphone_id" >> "$GITHUB_ENV"
+          echo "IPAD_DESTINATION=platform=iOS Simulator,id=$ipad_id" >> "$GITHUB_ENV"
+
+      - name: Test public API on iOS
+        run: |
+          xcodebuild test -quiet \
+            -project ThinkingOrbsDemo.xcodeproj \
+            -scheme ThinkingOrbsKitIOSTests \
+            -destination "$IPHONE_DESTINATION" \
+            -derivedDataPath "$RUNNER_TEMP/api-tests"
+
+      - name: Test demo on iPhone
+        run: |
+          xcodebuild test -quiet \
+            -project ThinkingOrbsDemo.xcodeproj \
+            -scheme ThinkingOrbsDemo \
+            -destination "$IPHONE_DESTINATION" \
+            -only-testing:ThinkingOrbsDemoUITests \
+            -derivedDataPath "$RUNNER_TEMP/iphone-ui-tests"
+
+      - name: Test demo on iPad
+        run: |
+          xcodebuild test -quiet \
+            -project ThinkingOrbsDemo.xcodeproj \
+            -scheme ThinkingOrbsDemo \
+            -destination "$IPAD_DESTINATION" \
+            -only-testing:ThinkingOrbsDemoUITests \
+            -derivedDataPath "$RUNNER_TEMP/ipad-ui-tests"

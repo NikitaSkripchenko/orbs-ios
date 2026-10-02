@@ -69,6 +69,22 @@ jobs:
             -only-testing:ThinkingOrbsDemoUITests \
             -derivedDataPath "$RUNNER_TEMP/iphone-ui-tests"
 
+      - name: Test system Reduce Motion
+        env:
+          TEST_RUNNER_EXPECTED_REDUCE_MOTION: "1"
+        run: |
+          simulator_id=${IPHONE_DESTINATION##*id=}
+          original_motion=$(xcrun simctl spawn "$simulator_id" defaults read com.apple.Accessibility ReduceMotionEnabled)
+          trap 'xcrun simctl spawn "$simulator_id" defaults write com.apple.Accessibility ReduceMotionEnabled -bool "$original_motion"' EXIT
+          xcrun simctl spawn "$simulator_id" defaults write com.apple.Accessibility ReduceMotionEnabled -bool YES
+          xcodebuild test -quiet \
+            -project ThinkingOrbsDemo.xcodeproj \
+            -scheme ThinkingOrbsDemo \
+            -destination "$IPHONE_DESTINATION" \
+            -only-testing:ThinkingOrbsDemoUITests/ThinkingOrbsDemoUITests/testDemoFollowsSystemReduceMotion \
+            -parallel-testing-enabled NO \
+            -derivedDataPath "$RUNNER_TEMP/iphone-ui-tests"
+
       - name: Test demo on iPad
         run: |
           xcodebuild test -quiet \

@@ -3,6 +3,34 @@ import UIKit
 
 @MainActor
 final class ThinkingOrbsDemoUITests: XCTestCase {
+    func testDemoFollowsSystemReduceMotion() {
+        let reduced = UIAccessibility.isReduceMotionEnabled
+        if let expected = ProcessInfo.processInfo.environment["EXPECTED_REDUCE_MOTION"] {
+            XCTAssertEqual(reduced, expected == "1", "Verify the simulator setting before testing the app")
+        }
+        let app = XCUIApplication()
+        app.launch()
+        let galleryOrb = app.images["Working…"]
+        XCTAssertTrue(galleryOrb.waitForExistence(timeout: 2))
+        assertMotion(of: galleryOrb, reduced: reduced)
+
+        tab(named: "Playground", in: app).tap()
+        let playgroundOrb = app.descendants(matching: .any)["playgroundOrb"]
+        XCTAssertTrue(playgroundOrb.waitForExistence(timeout: 2))
+        assertMotion(of: playgroundOrb, reduced: reduced)
+    }
+
+    private func assertMotion(of orb: XCUIElement, reduced: Bool) {
+        let first = orb.screenshot()
+        Thread.sleep(forTimeInterval: 0.2)
+        let difference = pixelDifference(first, orb.screenshot())
+        if reduced {
+            XCTAssertLessThanOrEqual(difference, 2, "System Reduce Motion must freeze the demo")
+        } else {
+            XCTAssertGreaterThan(difference, 2, "The default demo must animate when motion is allowed")
+        }
+    }
+
     func testPausedOrbKeepsItsFrameAcrossSpeedChanges() {
         let app = XCUIApplication()
         app.launch()

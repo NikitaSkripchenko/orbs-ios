@@ -4,7 +4,7 @@
 
 - Version: 0.1.0
 - Phase: iOS package and demo implementation complete
-- Branch: `main`
+- Branch: `codex/audit-remediation`
 - Platform: iOS 15+
 - macOS: deferred in `TODO.md`; not claimed by version 0.1
 - Upstream commit: `de85557ca220332586d070d8788c0e1d6e877a0d`
@@ -89,7 +89,7 @@
 - The public renderer is wrapped in `#if os(iOS)` so host parity tests do not accidentally advertise macOS support. Add macOS only after the TODO checklist is completed.
 - Equal-depth dots can receive different sub-tolerance ordering across JavaScript and Swift math libraries. Tests compare each dot as a unique multiset within `1e-4` and separately require monotonic depth order; lines remain ordered strictly.
 - Manual visual, VoiceOver, and Instruments inspection remain release follow-ups. Automated golden parity, renderer behavior, and demo UI coverage are complete.
-- No git remote or release tag exists yet. Publishing version 0.1.0 remains an external release step after physical-device validation.
+- `origin` is configured as `git@github.com:NikitaSkripchenko/orbs-ios.git`. No release tag is present locally as of 2026-10-02. Publishing version 0.1.0 remains an external release step after physical-device validation.
 - `xcrun devicectl list devices` found the paired iPhone 16 Pro in `unavailable` state, so physical-device Instruments and energy profiling could not run in this session.
 
 ### Audit fixes — 2026-10-02: finite speed bounds
@@ -109,3 +109,11 @@
 - Consumer API: same destination with scheme `ThinkingOrbsKitIOSTests`, no `-only-testing` — 3 tests passed. Views are now installed in `UIHostingController` rather than accessing `body` outside an environment. Result: `~/Library/Developer/XcodeBuildMCP/workspaces/ThinkingOrbsKit-748abcc75b21/result-bundles/test_sim_2026-10-02T13-29-46-844Z_pid39909_5c84dd9b.xcresult`.
 - Test investigation: a hostless UIWindow could not drive Canvas animation, so the rendered regression lives in the demo UI target. SwiftUI Toggle rows required tapping the switch at the trailing edge and asserting its value. Decoded snapshots of an unchanged Canvas differed in seven pixels by one 8-bit color step; the UI comparison allows at most two color steps per channel. Golden geometry tolerance remains `1e-4`.
 - Xcode 27 emits existing XCTest-link deployment warnings for the test targets (iOS 15 versus SDK XCTest minimum 17); package/demo deployment support is still iOS 15+.
+
+### Audit fixes — 2026-10-02: system Reduce Motion
+
+- Demo preview off now passes `nil` instead of `false` to the public override, preserving the system setting in Gallery and Playground. Preview on still passes `true`.
+- Added a rendered test that checks both tabs against `UIAccessibility.isReduceMotionEnabled`. CI runs it again with system Reduce Motion enabled and `TEST_RUNNER_EXPECTED_REDUCE_MOTION=1`, then restores the prior preference.
+- RED: `xcrun simctl spawn EDBFC97C-1468-45EF-A5A9-C9D8EB531A66 defaults write com.apple.Accessibility ReduceMotionEnabled -bool YES`, then `TEST_RUNNER_EXPECTED_REDUCE_MOTION=1 xcodebuild test -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,id=EDBFC97C-1468-45EF-A5A9-C9D8EB531A66' -only-testing:ThinkingOrbsDemoUITests/ThinkingOrbsDemoUITests/testDemoFollowsSystemReduceMotion -parallel-testing-enabled NO` (via XcodeBuildMCP) — failed as expected, color difference 234 > 2. Result: `~/Library/Developer/XcodeBuildMCP/workspaces/ThinkingOrbsKit-748abcc75b21/result-bundles/test_sim_2026-10-02T13-31-27-615Z_pid39909_ed2c6f65.xcresult`.
+- GREEN: same setting and test command — 1 test passed, covering both tabs with the verified-enabled system setting. Result: `~/Library/Developer/XcodeBuildMCP/workspaces/ThinkingOrbsKit-748abcc75b21/result-bundles/test_sim_2026-10-02T13-32-46-480Z_pid39909_798ff488.xcresult`. Restored the original `ReduceMotionEnabled=0` with `defaults write ... -bool NO` in a finally block after each run.
+- iPad regression: `xcodebuild test -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,id=AE574CA7-E0DE-41CC-A719-05A3C68ED0AC' -only-testing:ThinkingOrbsDemoUITests -parallel-testing-enabled NO -test-timeouts-enabled YES -maximum-test-execution-time-allowance 90` (via XcodeBuildMCP) — all 6 tests passed on iPad Pro 11-inch (M5), iOS 27, including the persistent settings pane and motion checks. Result: `~/Library/Developer/XcodeBuildMCP/workspaces/ThinkingOrbsKit-748abcc75b21/result-bundles/test_sim_2026-10-02T13-33-29-441Z_pid39909_da016f9b.xcresult`.

@@ -67,6 +67,16 @@
 
 ### Social video exports — 2026-10-02
 
+#### Revision: English copy and animated transitions
+
+- User requested English-only video copy, removal of the on-screen “Original orbs” caption, and a more dynamic edit. All three exports now use “9 states”; the requested caption is removed. Attribution remains in the repository README, media README, source comments, license, and pinned upstream provenance.
+- Added curved screen-space particle interpolation (0.72 seconds for Noir/Editorial, 0.48 for Pulse), opacity compensation for differing particle counts, smooth background transitions, camera movement, and faster animation playback. Noir/Editorial now include an additional hero state. Public engine and renderer behavior is unchanged.
+- `bash media/social/render.sh --check` — passed particle transition endpoint, opacity conservation, count distribution, and cut-boundary render checks for all three variants.
+- `bash media/social/render.sh` — rebuilt all three final MP4s, covers and soundtracks successfully.
+- `python3 media/social/verify.py` — passed all three exports, English-only exporter copy, and absence of the removed caption. Each export has 540 frames, 1080×1920 resolution, 30 fps, 18-second duration, H.264 video and AAC stereo. Full decode passed; audio peaks remain −1.6/−1.5/−1.7 dBFS.
+- Inspected the updated final-video storyboard at 1.5, 3.3, 6.3, 9.3 and 16 seconds, including intermediate particle transitions and the caption-free end cards. Updated the comparison image and English media README.
+- Package tests were not repeated: this revision changes only the offline media exporter and artifacts; the 25 passing package tests recorded below remain the latest package verification.
+
 - Added three locally rendered vertical presentations in `media/social`: Noir, Editorial, and Pulse. Each is 18 seconds, 1080×1920, 30 fps, H.264/yuv420p with AAC stereo, original synthesized audio, a cover image, and an upstream credit in the closing card.
 - Applied the user's feedback to remove dense copy and code. Final compositions focus on enlarged engine animation, a nine-state gallery, minimal branding, and the repository URL.
 - Exporter compiles the existing pure geometry sources without modifying them; 64-point geometry is enlarged for the promotional composition. It is not a screen recording and does not claim macOS package-renderer support.

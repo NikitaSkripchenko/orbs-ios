@@ -1,31 +1,30 @@
 # ThinkingOrbsKit — social videos
 
-Три готовых вертикальных ролика: **1080×1920, 9:16, 18 секунд, 30 fps**, H.264 + AAC stereo.
+Three vertical videos: **1080×1920, 9:16, 18 seconds, 30 fps**, H.264 + AAC stereo.
 
-- `thinking-orbs-noir.mp4` — чёрный фон, крупные сферы, спокойные переходы; музыка 80 BPM.
-- `thinking-orbs-editorial.mp4` — тёплый светлый фон, графичные формы; музыка 100 BPM.
-- `thinking-orbs-pulse.mp4` — ритмичная смена состояний и светлого/тёмного фона; музыка 120 BPM.
+- `thinking-orbs-noir.mp4`: dark, sculptural particles; curved particle transitions, gentle camera movement; 80 BPM.
+- `thinking-orbs-editorial.mp4`: warm paper background and geometric forms; smooth particle transformations; 100 BPM.
+- `thinking-orbs-pulse.mp4`: faster state changes, fluid light/dark transitions and a two-orb composition; 120 BPM.
 
-После обратной связи убраны рекламные заголовки, код и названия отдельных состояний. Остались название проекта, «9 состояний», ссылка и компактный credit в финале. Все три варианта показывают девять анимаций.
+All on-screen copy is English: the project name, “9 states”, and the repository URL. The attribution caption was removed from the videos at the user's request. All nine states appear in every video.
 
-Геометрия рассчитывается существующими Swift-движками, используя `.points64` и preset speed, затем увеличивается для видеокомпозиции. Это motion-презентация, а не запись интерфейса приложения. Публичный SwiftUI-компонент остаётся iOS-only.
+The compositions use the existing Swift engines at `.points64`, enlarged for video. Animation speed is 1.15× for Noir/Editorial and 1.30× for Pulse. Transitions interpolate screen-space particles along curved paths over 0.72 or 0.48 seconds, with opacity compensation when particle counts differ. These are promotional compositions, not app screen recordings or additional public API features. Package sources and the iOS-only renderer remain unchanged.
 
-Звук синтезирован локально без сторонних семплов: аккорды, короткие ноты, мягкий kick и ticks. Музыка встроена в MP4. Отдельные WAV сохранены для дальнейшего монтажа. Обложки: `*-cover.png`.
+Audio is locally synthesized without third-party samples. Music is embedded in each MP4; separate WAV files and PNG covers are included.
 
-Original animation design and engine mathematics: © 2026 Jakub Antalik, MIT. See the repository `LICENSE` and `Upstream/UPSTREAM.md`. Pinned engine sources and license were not changed.
+Original animation design and engine mathematics: © 2026 Jakub Antalik, MIT. See the repository `LICENSE` and `Upstream/UPSTREAM.md`. License, source provenance, pinned upstream files, and README attribution are preserved.
 
-## Повторная сборка
+## Rebuild and verify
 
-Требования только для экспорта: macOS, установленный Swift/Xcode и FFmpeg в `/opt/homebrew/bin/ffmpeg`. Зависимости пакета не меняются.
+Export-only requirements: macOS, Swift/Xcode, and FFmpeg at `/opt/homebrew/bin/ffmpeg`. No package dependencies are added.
 
-Из корня репозитория:
+Run from the repository root:
 
 ```sh
-bash media/social/render.sh                 # Все три MP4, WAV и обложки
-bash media/social/render.sh --preview       # По пять пробных кадров
-python3 media/social/verify.py              # Формат, длительность, 540 кадров, декодирование и звук
+bash media/social/render.sh --check    # Transition endpoints, opacity, counts and cut boundaries
+bash media/social/render.sh            # Three MP4s, WAVs and covers
+bash media/social/render.sh --preview  # Five sample frames per variant
+python3 media/social/verify.py         # Format, frame count, full decode, audio and English-only copy
 ```
 
-`storyboard.jpg` содержит кадры финальных MP4 на 1.5, 5, 9.5, 12 и 16 секундах; строки: Noir, Editorial, Pulse.
-
-Встроенная проверка экспорта не заменяет iOS-тесты приложения. Исходники пакета и демо не изменялись.
+`storyboard.jpg` contains frames from the final MP4s at 1.5, 3.3, 6.3, 9.3 and 16 seconds; rows: Noir, Editorial, Pulse. Intermediate transition frames intentionally show particles travelling between forms.

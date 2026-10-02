@@ -8,7 +8,7 @@
     "video": "H.264 / yuv420p",
     "audio": "AAC stereo",
     "audio_peak_dbfs": -1.6,
-    "bytes": 5428887,
+    "bytes": 6313574,
     "full_decode": "passed"
   },
   {
@@ -20,7 +20,7 @@
     "video": "H.264 / yuv420p",
     "audio": "AAC stereo",
     "audio_peak_dbfs": -1.5,
-    "bytes": 2778851,
+    "bytes": 4569833,
     "full_decode": "passed"
   },
   {
@@ -32,7 +32,7 @@
     "video": "H.264 / yuv420p",
     "audio": "AAC stereo",
     "audio_peak_dbfs": -1.7,
-    "bytes": 4716055,
+    "bytes": 5909115,
     "full_decode": "passed"
   }
 ]

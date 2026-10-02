@@ -5,6 +5,9 @@ import re
 import subprocess
 
 root = pathlib.Path(__file__).resolve().parent
+source = (root / "render.swift").read_text()
+assert not re.search(r"[\u0400-\u04ff]", source), "Non-English Cyrillic copy in exporter"
+assert 'text("Original orbs' not in source, "Removed caption returned"
 results = []
 for name in ("noir", "editorial", "pulse"):
     path = root / f"thinking-orbs-{name}.mp4"

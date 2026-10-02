@@ -58,74 +58,144 @@ func text(_ value: String, _ x: Double, _ y: Double, _ size: Double, _ ink: Ink,
     CTLineDraw(ctLine, context)
     context.restoreGState()
 }
-func orb(_ state: OrbState, _ time: Double, _ cx: Double, _ cy: Double, _ size: Double, dark: Bool) {
+struct Mark {
+    let x: Double, y: Double, radius: Double, ink: Double, alpha: Double
+}
+struct Stroke {
+    let x1: Double, y1: Double, x2: Double, y2: Double, width: Double, ink: Double, alpha: Double
+}
+struct Composition {
+    var dots: [Mark] = []
+    var lines: [Stroke] = []
+    let light: Bool
+    let gallery: Bool
+    let ending: Bool
+}
+func mix(_ a: Double, _ b: Double, _ p: Double) -> Double { a + (b - a) * p }
+func smooth(_ x: Double) -> Double { let p = clamp(x); return p * p * (3 - 2 * p) }
+func path(_ a: Mark, _ b: Mark, _ p: Double) -> (Double, Double) {
+    let dx = b.x - a.x, dy = b.y - a.y
+    let distance = hypot(dx, dy)
+    let arc = sin(.pi * p) * min(95, distance * 0.18)
+    return (mix(a.x, b.x, p) - dy / max(1, distance) * arc,
+            mix(a.y, b.y, p) + dx / max(1, distance) * arc)
+}
+func addOrb(_ state: OrbState, _ time: Double, _ cx: Double, _ cy: Double, _ size: Double,
+            to composition: inout Composition) {
     let preset = OrbSpec.resolve(state: state, size: .points64)
-    let frame = OrbEngine.frame(resolved: preset, size: .points64, modeTime: time * preset.speed)
-    context.saveGState()
-    context.translateBy(x: cx - size / 2, y: cy - size / 2)
-    context.scaleBy(x: size / 64, y: size / 64)
+    let speed = variant == "pulse" ? 1.30 : 1.15
+    let frame = OrbEngine.frame(resolved: preset, size: .points64, modeTime: time * preset.speed * speed)
+    let scale = size / 64
+    let x = cx - size / 2, y = cy - size / 2
+    for dot in frame.dots {
+        composition.dots.append(Mark(x: x + dot.x * scale, y: y + dot.y * scale,
+            radius: dot.radius * scale, ink: OrbInk.gray(white: dot.white, dark: !composition.light), alpha: dot.alpha))
+    }
     for mark in frame.lines {
-        context.setStrokeColor(CGColor(gray: OrbInk.gray(white: mark.white, dark: dark), alpha: mark.alpha))
+        composition.lines.append(Stroke(x1: x + mark.x1 * scale, y1: y + mark.y1 * scale,
+            x2: x + mark.x2 * scale, y2: y + mark.y2 * scale, width: mark.width * scale,
+            ink: OrbInk.gray(white: mark.white, dark: !composition.light), alpha: mark.alpha))
+    }
+}
+let cuts: [Double] = variant == "pulse" ? [0, 1.5, 3, 4.5, 6, 7.5, 9, 12, 15, 18] : [0, 3, 6, 9, 13.5, 18]
+func composition(_ index: Int, _ t: Double) -> Composition {
+    let ending = index == cuts.count - 2
+    let isGallery = variant == "pulse" ? index == 6 : index == 3
+    let light = variant == "editorial" || (variant == "pulse" && [1, 3, 5].contains(index))
+    var result = Composition(light: light, gallery: isGallery, ending: ending)
+    let phase = clamp((t - cuts[index]) / (cuts[index + 1] - cuts[index]))
+    if ending {
+        addOrb(variant == "editorial" ? .shaping : .breathing, t, 535, 890,
+               890 + 35 * ease(phase), to: &result)
+    } else if isGallery {
+        for (i, state) in states.enumerated() {
+            addOrb(state, t, 235 + Double(i % 3) * 290, 555 + Double(i / 3) * 335,
+                   205, to: &result)
+        }
+    } else if variant == "pulse" && index == 7 {
+        addOrb(.composing, t, 535, 650, 690, to: &result)
+        addOrb(.weaving, t, 535, 1230, 630, to: &result)
+    } else {
+        let sequence: [OrbState] = variant == "noir" ? [.searching, .solving, .composing] :
+            variant == "editorial" ? [.weaving, .shaping, .composing] :
+            [.working, .searching, .solving, .listening, .connecting, .weaving]
+        let zoom = 1010 + 85 * sin(phase * .pi)
+        addOrb(sequence[index], t, 535 + 14 * sin(phase * .pi * 2), 945, zoom, to: &result)
+    }
+    return result
+}
+func drawDot(_ x: Double, _ y: Double, _ radius: Double, _ ink: Double, _ alpha: Double) {
+    context.setFillColor(CGColor(gray: ink, alpha: alpha))
+    context.fillEllipse(in: CGRect(x: x - radius, y: y - radius, width: radius * 2, height: radius * 2))
+}
+func drawLines(_ lines: [Stroke], opacity: Double) {
+    for mark in lines {
+        context.setStrokeColor(CGColor(gray: mark.ink, alpha: mark.alpha * opacity))
         context.setLineWidth(mark.width)
         context.move(to: CGPoint(x: mark.x1, y: mark.y1))
         context.addLine(to: CGPoint(x: mark.x2, y: mark.y2)); context.strokePath()
     }
-    for dot in frame.dots {
-        context.setFillColor(CGColor(gray: OrbInk.gray(white: dot.white, dark: dark), alpha: dot.alpha))
-        context.fillEllipse(in: CGRect(x: dot.x - dot.radius, y: dot.y - dot.radius,
-                                      width: dot.radius * 2, height: dot.radius * 2))
-    }
-    context.restoreGState()
 }
-func gallery(_ t: Double, top: Double, dark: Bool, spacing: Double = 280) {
-    for (i, state) in states.enumerated() {
-        let x = 235.0 + Double(i % 3) * 290
-        let y = top + Double(i / 3) * spacing
-        orb(state, t, x, y, 190, dark: dark)
+func ordered(_ dots: [Mark]) -> [Mark] {
+    // Polar ordering produces coherent ribbons rather than random particle crossings.
+    dots.sorted {
+        let a = atan2($0.y - 945, $0.x - 535), b = atan2($1.y - 945, $1.x - 535)
+        return a == b ? hypot($0.x - 535, $0.y - 945) < hypot($1.x - 535, $1.y - 945) : a < b
+    }
+}
+func copies(_ index: Int, count: Int, total: Int) -> Int {
+    ((index + 1) * total + count - 1) / count - (index * total + count - 1) / count
+}
+func renderTransition(_ from: Composition, _ to: Composition, _ p: Double) {
+    drawLines(from.lines, opacity: 1 - p)
+    drawLines(to.lines, opacity: p)
+    let a = ordered(from.dots), b = ordered(to.dots)
+    let count = max(a.count, b.count)
+    guard !a.isEmpty && !b.isEmpty else { return }
+    for i in 0..<count {
+        let ai = i * a.count / count, bi = i * b.count / count
+        let source = a[ai], target = b[bi]
+        let (x, y) = path(source, target, p)
+        // Split opacity when a source dot maps to several target particles.
+        let aa = 1 - pow(1 - source.alpha, 1 / Double(copies(ai, count: a.count, total: count)))
+        let ba = 1 - pow(1 - target.alpha, 1 / Double(copies(bi, count: b.count, total: count)))
+        drawDot(x, y, mix(source.radius, target.radius, p), mix(source.ink, target.ink, p), mix(aa, ba, p))
     }
 }
 func scene(_ t: Double) {
-    let cuts: [Double] = variant == "pulse" ? [0, 1.5, 3, 4.5, 6, 7.5, 9, 12, 15, 18] : [0, 4.5, 9, 13.5, 18]
     let index = (0..<(cuts.count - 1)).first { t < cuts[$0 + 1] } ?? cuts.count - 2
     let local = t - cuts[index]
-    let length = cuts[index + 1] - cuts[index]
-    let ending = index == cuts.count - 2
-    let light = variant == "editorial" || (variant == "pulse" && [1, 3, 5].contains(index))
-    let ink = light ? charcoal : white
-    rect(0, 0, Double(width), Double(height), light ? paper : charcoal)
-    // The pulse cut uses a hard exposure change on the beat; the other edits breathe.
-    let incoming = index == 0 || variant == "pulse" ? 1 : ease(local / 0.30)
-    let outgoing = ending || variant == "pulse" ? 1 : clamp((length - local) / 0.15)
+    let span = variant == "pulse" ? 0.48 : 0.72
+    let p = index == 0 ? 1 : smooth(local / span)
+    let target = composition(index, t)
+    let source = composition(max(0, index - 1), t)
+    let startColor = source.light ? paper : charcoal, endColor = target.light ? paper : charcoal
+    rect(0, 0, Double(width), Double(height),
+         Ink(mix(startColor.r, endColor.r, p), mix(startColor.g, endColor.g, p), mix(startColor.b, endColor.b, p)))
+    if p < 1 { renderTransition(source, target, p) }
+    else {
+        drawLines(target.lines, opacity: 1)
+        for dot in target.dots { drawDot(dot.x, dot.y, dot.radius, dot.ink, dot.alpha) }
+    }
+    let startInk = source.light ? charcoal : white, endInk = target.light ? charcoal : white
+    let ink = Ink(mix(startInk.r, endInk.r, p), mix(startInk.g, endInk.g, p), mix(startInk.b, endInk.b, p))
     context.saveGState()
-    context.setAlpha(incoming * outgoing)
-    context.translateBy(x: 0, y: 18 * (1 - incoming))
-    if !ending {
-        text("ThinkingOrbsKit", 94, 205, 35, ink, font: "HelveticaNeue-Medium")
-        rect(925, 212, 13, 13, variant == "editorial" ? orange : variant == "pulse" ? mint : white)
-    }
-    if ending {
-        orb(variant == "editorial" ? .shaping : .breathing, t, 535, 890,
-            860 + 30 * ease(local / length), dark: !light)
-        text("ThinkingOrbsKit", 94, 1370, 77, ink, font: "HelveticaNeue-Medium")
-        text("github.com/NikitaSkripchenko/orbs-ios", 94, 1480, 28,
-             light ? charcoal : gray, font: "Menlo-Regular")
-        text("Original orbs · Jakub Antalik · MIT", 94, 1655, 22,
-             light ? charcoal : gray)
-    } else if (variant != "pulse" && index == 2) || (variant == "pulse" && index == 6) {
-        gallery(t, top: 555, dark: !light, spacing: 335)
-        text("9 состояний", 94, 1490, 52, ink, font: "HelveticaNeue-Medium")
-    } else if variant == "pulse" && index == 7 {
-        orb(.composing, t, 535, 650, 690, dark: true)
-        orb(.weaving, t, 535, 1230, 630, dark: true)
-    } else {
-        let selected: OrbState
-        if variant == "noir" { selected = index == 0 ? .searching : .composing }
-        else if variant == "editorial" { selected = index == 0 ? .weaving : .shaping }
-        else { selected = [.working, .searching, .solving, .listening, .connecting, .weaving][index] }
-        let zoom = variant == "pulse" ? 1060 - 75 * ease(local / length) : 990 + 65 * ease(local / length)
-        orb(selected, t, 535, 945, zoom, dark: !light)
-    }
+    context.setAlpha(target.ending ? 1 - p : 1)
+    text("ThinkingOrbsKit", 94, 205, 35, ink, font: "HelveticaNeue-Medium")
     context.restoreGState()
+    let galleryOpacity = target.ending ? (source.gallery ? 1 - smooth(p / 0.45) : 0) : mix(source.gallery ? 1 : 0, target.gallery ? 1 : 0, p)
+    if galleryOpacity > 0 {
+        context.saveGState(); context.setAlpha(galleryOpacity)
+        text("9 states", 94, 1490, 52, ink, font: "HelveticaNeue-Medium")
+        context.restoreGState()
+    }
+    if target.ending {
+        context.saveGState(); context.setAlpha(smooth((p - 0.45) / 0.55))
+        text("ThinkingOrbsKit", 94, 1370 + 16 * (1 - p), 77, ink, font: "HelveticaNeue-Medium")
+        text("github.com/NikitaSkripchenko/orbs-ios", 94, 1480 + 16 * (1 - p), 28,
+             target.light ? charcoal : gray, font: "Menlo-Regular")
+        context.restoreGState()
+    }
 }
 
 func render(_ t: Double) {
@@ -191,7 +261,26 @@ func soundtrack(_ path: String) throws {
 }
 
 try FileManager.default.createDirectory(atPath: output, withIntermediateDirectories: true)
-if previewOnly {
+if CommandLine.arguments.contains("--check") {
+    for n in 1...40 {
+        for total in n...80 {
+            let weights = (0..<n).map { copies($0, count: n, total: total) }
+            precondition(weights.reduce(0, +) == total && weights.allSatisfy { $0 > 0 })
+            for count in weights {
+                let alpha = 1 - pow(1 - 0.7, 1 / Double(count))
+                precondition(abs((1 - pow(1 - alpha, Double(count))) - 0.7) < 1e-10)
+            }
+        }
+    }
+    let a = Mark(x: 10, y: 20, radius: 3, ink: 0.2, alpha: 0.5)
+    let b = Mark(x: 80, y: 90, radius: 5, ink: 0.8, alpha: 0.9)
+    precondition(path(a, b, 0) == (a.x, a.y))
+    precondition(abs(path(a, b, 1).0 - b.x) < 1e-10 && abs(path(a, b, 1).1 - b.y) < 1e-10)
+    for cut in cuts.dropFirst().dropLast() {
+        for delta in [-1.0 / 30, 0, 0.24, 0.48, 0.72] { render(cut + delta) }
+    }
+    print("Passed transition endpoint, opacity, count and boundary rendering checks: \(variant)")
+} else if previewOnly {
     for (i, t) in [1.5, 5.0, 9.5, 12.0, 16.0].enumerated() {
         render(t); try png("\(output)/\(variant)-preview-\(i).png")
     }

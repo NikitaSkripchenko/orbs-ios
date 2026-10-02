@@ -66,10 +66,8 @@ ThinkingOrbsKit/
 │       │   ├── OrbFrame.swift
 │       │   ├── OrbMath.swift
 │       │   ├── OrbEngine.swift
-│       │   ├── GlobeEngine.swift
 │       │   ├── OrbitEngine.swift
-│       │   ├── RubikEngine.swift
-│       │   ├── WaveEngine.swift
+│       │   ├── LatticeEngine.swift
 │       │   ├── WebEngine.swift
 │       │   ├── BraidEngine.swift
 │       │   ├── RibbonEngine.swift
@@ -155,7 +153,7 @@ ThinkingOrb(
 )
 ```
 
-The view owns no external state. Changing any input immediately changes subsequent rendered frames. Nonfinite speed falls back to `1`; negative speed is clamped to `0`. A speed of `0` renders a stable frame while `paused` preserves the current shared-clock phase. `reduceMotionOverride` is an optional demo/testing hook; production callers should omit it so the system accessibility environment remains authoritative.
+The view owns no external state. Changing any input immediately changes subsequent rendered frames. Nonfinite speed falls back to `1`; finite speed is clamped to `0...100`. Changing speed preserves the current phase. Zero speed and explicit pause freeze that phase; resuming excludes the paused duration. `reduceMotionOverride` is an optional demo/testing hook; production callers should omit it so the system accessibility environment remains authoritative.
 
 ## Engine architecture
 
@@ -174,7 +172,7 @@ struct OrbFrame: Equatable, Sendable {
 
 ### Shared math
 
-`OrbMath` contains deterministic primitives shared by the nine modes: interpolation, wrapped angles, projection, Fibonacci-sphere directions, deterministic hashing, value noise, radius scaling, and frame finalization. Mode files remain small and mirror one upstream engine each.
+`OrbMath` contains deterministic primitives shared by the nine modes: interpolation, wrapped angles, projection, Fibonacci-sphere directions, deterministic hashing, value noise, radius scaling, and frame finalization. Mode files retain the upstream formulas. `LatticeEngine.swift` groups the globe, rubik, and wave modes; `RibbonEngine.swift` implements ribbon and ring.
 
 ### Presets
 
@@ -184,9 +182,9 @@ Package builds do not run the generator. A maintainer-only script may regenerate
 
 ### Rendering
 
-`ThinkingOrb` uses `TimelineView(.animation)` and `Canvas`. The clock is derived from the timeline date so all instances share a phase. Each frame draws lines first, then depth-sorted circles using source-over composition. Rendering uses no filters or offscreen bitmap resources.
+`ThinkingOrb` uses `TimelineView(.animation)` and `Canvas`. A pure `OrbPlaybackClock` stores an anchor date, accumulated phase, and rate. New running instances derive their initial phase from the shared reference date. SwiftUI retains the clock in `@State` and reanchors it when speed or suspension changes, preserving continuity. Independently controlled instances can diverge after those changes; they do not jump back to a global phase. Each frame draws lines first, then depth-sorted circles using source-over composition. Rendering uses no filters or offscreen bitmap resources.
 
-`OrbTheme.automatic` resolves from SwiftUI's `colorScheme`. Explicit themes override the environment. Dark appearance mirrors the upstream grayscale ink calculation. Reduce Motion renders the upstream representative static time and pauses the animation schedule.
+`OrbTheme.automatic` resolves from SwiftUI's `colorScheme`. Explicit themes override the environment. Dark appearance mirrors the upstream grayscale ink calculation. Reduce Motion renders the upstream representative static time, pauses the animation schedule, and suspends the playback clock; disabling it continues the previous animated phase.
 
 ## Accessibility
 
@@ -232,7 +230,7 @@ Both Playground settings presentations use the same native SwiftUI controls:
 - segmented theme picker for Automatic, Light, and Dark;
 - speed slider from `0.25` through `2.0`, with a reset-to-1 action;
 - paused toggle; and
-- forced Reduce Motion preview toggle applied only through the demo-only `reduceMotionOverride` parameter.
+- forced Reduce Motion preview toggle: on passes `true`; off passes `nil` so the system preference remains authoritative.
 
 The compact sheet uses a navigation title and Done action. The regular-width pane uses a persistent Settings header. Both use semantic styles, Dynamic Type, and scrollable content at large accessibility sizes. Demo state is in memory only.
 
@@ -275,16 +273,16 @@ Every numeric value must match within `1e-4`, the upstream port tolerance. Missi
 
 ### iOS public API tests
 
-The `ThinkingOrbsKitIOSTests` target imports the package without `@testable`. It builds the default view and every public state, size, theme, and initializer option on an iOS simulator. Demo UI tests verify that the rendered orb exposes its default image-like accessibility element.
+The `ThinkingOrbsKitIOSTests` target imports the package without `@testable`. It builds the default view and every public state, size, theme, and initializer option on an iOS simulator. Consumer views are installed in `UIHostingController` so environment values are read in a view hierarchy. Demo UI tests verify the default image-like accessibility element, rendered pause/speed/resume behavior, and system Reduce Motion in both tabs.
 
 ### Build verification
 
-Normal verification remains offline and deterministic:
+Normal verification remains offline. Select installed simulator IDs with `xcrun simctl list devices available` and replace the placeholders below. Geometry tests use deterministic inputs; UI tests inspect rendered behavior:
 
 ```bash
-xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsKitIOSTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
+xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsKitIOSTests -destination 'platform=iOS Simulator,id=<IPHONE_UDID>'
 xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator'
-xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M5),OS=latest' -only-testing:ThinkingOrbsDemoUITests
+xcodebuild test -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,id=<IPAD_UDID>' -only-testing:ThinkingOrbsDemoUITests
 ```
 
 The deterministic engine suite runs with `swift test`; this does not claim macOS renderer support because the public view remains iOS-only. The consumer-module test target must compile and run on an iOS simulator without warnings under strict concurrency checking. The demo must build for iPhone and iPad without a network dependency after package resolution.

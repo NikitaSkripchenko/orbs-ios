@@ -4,7 +4,7 @@
 
 - Version: 0.1.0
 - Phase: iOS package and demo implementation complete
-- Branch: `main`
+- Branch: `codex/audit-remediation`
 - Platform: iOS 15+
 - macOS: deferred in `TODO.md`; not claimed by version 0.1
 - Upstream commit: `de85557ca220332586d070d8788c0e1d6e877a0d`
@@ -89,5 +89,53 @@
 - The public renderer is wrapped in `#if os(iOS)` so host parity tests do not accidentally advertise macOS support. Add macOS only after the TODO checklist is completed.
 - Equal-depth dots can receive different sub-tolerance ordering across JavaScript and Swift math libraries. Tests compare each dot as a unique multiset within `1e-4` and separately require monotonic depth order; lines remain ordered strictly.
 - Manual visual, VoiceOver, and Instruments inspection remain release follow-ups. Automated golden parity, renderer behavior, and demo UI coverage are complete.
-- No git remote or release tag exists yet. Publishing version 0.1.0 remains an external release step after physical-device validation.
+- `origin` is configured as `git@github.com:NikitaSkripchenko/orbs-ios.git`. No release tag is present locally as of 2026-10-02. Publishing version 0.1.0 remains an external release step after physical-device validation.
 - `xcrun devicectl list devices` found the paired iPhone 16 Pro in `unavailable` state, so physical-device Instruments and energy profiling could not run in this session.
+
+### Audit fixes — 2026-10-02: finite speed bounds
+
+- Clamp finite user speed to `0...100`; nonfinite values still fall back to `1`. This prevents time overflow and integer-conversion traps in geometry. Pinned formulas and golden files are unchanged.
+- RED: `CLANG_MODULE_CACHE_PATH=/private/tmp/orbs-audit-module-cache swift test --disable-sandbox --scratch-path /private/tmp/orbs-audit-debug --cache-path /private/tmp/orbs-audit-spm-cache --config-path /private/tmp/orbs-audit-spm-config --security-path /private/tmp/orbs-audit-spm-security --filter extremeFiniteSpeedProducesRenderableFrames` — failed as expected: mode time was infinity. Log: `/private/tmp/orbs-speed-red.log`.
+- GREEN: same command without `--filter` — 26 tests in 12 suites passed, including every state/size at extreme finite speed and all 72 golden cases. Log: `/private/tmp/orbs-speed-green.log`.
+
+### Audit fixes — 2026-10-02: continuous playback
+
+- Added a pure playback clock retained by SwiftUI. Speed changes reanchor phase; pause/zero speed/Reduce Motion suspend it, and resuming excludes the suspended duration. New instances share the reference-date phase; independently controlled instances retain their own histories (ADR-009).
+- Clock RED: the package command above with `--filter PlaybackClockTests` against the initial stateless adapter failed with 10 assertions, including a 40,600,000.5-second phase discontinuity. Log: `/private/tmp/orbs-clock-red.log`.
+- Clock GREEN: full package command above — 33 tests in 13 suites passed; all 72 golden cases unchanged. Log: `/private/tmp/orbs-clock-green.log`.
+- iOS build: `xcodebuild build -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/orbs-fixes-ios` — passed. Log: `/private/tmp/orbs-clock-ios.log`.
+- UI RED: restored the pre-clock renderer temporarily and ran `xcodebuild test -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,id=EDBFC97C-1468-45EF-A5A9-C9D8EB531A66' -only-testing:ThinkingOrbsDemoUITests/ThinkingOrbsDemoUITests/testPausedOrbKeepsItsFrameAcrossSpeedChanges -parallel-testing-enabled NO` through XcodeBuildMCP. The verified-on pause changed by 233 color steps after a speed change (limit 2). Result: `~/Library/Developer/XcodeBuildMCP/workspaces/ThinkingOrbsKit-748abcc75b21/result-bundles/test_sim_2026-10-02T13-26-14-822Z_pid39909_a36ca1dd.xcresult`.
+- UI GREEN: same destination, scheme, and command with `-only-testing:ThinkingOrbsDemoUITests` — 5 tests passed on iPhone 18 Pro Max / iOS 27. Result: `~/Library/Developer/XcodeBuildMCP/workspaces/ThinkingOrbsKit-748abcc75b21/result-bundles/test_sim_2026-10-02T13-27-31-754Z_pid39909_d003a7e7.xcresult`.
+- Consumer API: same destination with scheme `ThinkingOrbsKitIOSTests`, no `-only-testing` — 3 tests passed. Views are now installed in `UIHostingController` rather than accessing `body` outside an environment. Result: `~/Library/Developer/XcodeBuildMCP/workspaces/ThinkingOrbsKit-748abcc75b21/result-bundles/test_sim_2026-10-02T13-29-46-844Z_pid39909_5c84dd9b.xcresult`.
+- Test investigation: a hostless UIWindow could not drive Canvas animation, so the rendered regression lives in the demo UI target. SwiftUI Toggle rows required tapping the switch at the trailing edge and asserting its value. Decoded snapshots of an unchanged Canvas differed in seven pixels by one 8-bit color step; the UI comparison allows at most two color steps per channel. Golden geometry tolerance remains `1e-4`.
+- Xcode 27 emits existing XCTest-link deployment warnings for the test targets (iOS 15 versus SDK XCTest minimum 17); package/demo deployment support is still iOS 15+.
+
+### Audit fixes — 2026-10-02: system Reduce Motion
+
+- Demo preview off now passes `nil` instead of `false` to the public override, preserving the system setting in Gallery and Playground. Preview on still passes `true`.
+- Added a rendered test that checks both tabs against `UIAccessibility.isReduceMotionEnabled`. CI runs it again with system Reduce Motion enabled and `TEST_RUNNER_EXPECTED_REDUCE_MOTION=1`, then restores the prior preference.
+- RED: `xcrun simctl spawn EDBFC97C-1468-45EF-A5A9-C9D8EB531A66 defaults write com.apple.Accessibility ReduceMotionEnabled -bool YES`, then `TEST_RUNNER_EXPECTED_REDUCE_MOTION=1 xcodebuild test -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,id=EDBFC97C-1468-45EF-A5A9-C9D8EB531A66' -only-testing:ThinkingOrbsDemoUITests/ThinkingOrbsDemoUITests/testDemoFollowsSystemReduceMotion -parallel-testing-enabled NO` (via XcodeBuildMCP) — failed as expected, color difference 234 > 2. Result: `~/Library/Developer/XcodeBuildMCP/workspaces/ThinkingOrbsKit-748abcc75b21/result-bundles/test_sim_2026-10-02T13-31-27-615Z_pid39909_ed2c6f65.xcresult`.
+- GREEN: same setting and test command — 1 test passed, covering both tabs with the verified-enabled system setting. Result: `~/Library/Developer/XcodeBuildMCP/workspaces/ThinkingOrbsKit-748abcc75b21/result-bundles/test_sim_2026-10-02T13-32-46-480Z_pid39909_798ff488.xcresult`. Restored the original `ReduceMotionEnabled=0` with `defaults write ... -bool NO` in a finally block after each run.
+- iPad regression: `xcodebuild test -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsDemo -destination 'platform=iOS Simulator,id=AE574CA7-E0DE-41CC-A719-05A3C68ED0AC' -only-testing:ThinkingOrbsDemoUITests -parallel-testing-enabled NO -test-timeouts-enabled YES -maximum-test-execution-time-allowance 90` (via XcodeBuildMCP) — all 6 tests passed on iPad Pro 11-inch (M5), iOS 27, including the persistent settings pane and motion checks. Result: `~/Library/Developer/XcodeBuildMCP/workspaces/ThinkingOrbsKit-748abcc75b21/result-bundles/test_sim_2026-10-02T13-33-29-441Z_pid39909_da016f9b.xcresult`.
+
+### Audit review follow-up — 2026-10-02: fresh simulator preferences
+
+- Independent review identified that a fresh simulator can lack `ReduceMotionEnabled`; confirmed by inspecting the iPad simulator's preferences. CI now boots/waits for the target, handles the missing key, and restores either the original value or the original absence.
+- `python3 /private/tmp/orbs-motion-ci-check.py` executes the extracted workflow shell with controlled `xcrun`/`xcodebuild` substitutes: all six combinations (absent/0/1 preference, successful/failing test) passed, including exit-code propagation and exact preference restoration. `bash -n /private/tmp/orbs-motion-ci.sh` passed.
+- A direct end-to-end run of the extracted CI step was interrupted by the user before test completion; its incomplete xcresult is not counted as verification. On resumption no process remained, and the temporary preference was still 1. Restored it explicitly using `xcrun simctl spawn EDBFC97C-1468-45EF-A5A9-C9D8EB531A66 defaults write com.apple.Accessibility ReduceMotionEnabled -bool NO`. The successful real enabled-setting UI regression is recorded above. EXIT traps cannot restore preferences after forcible process termination.
+
+### Audit documentation and final checks — 2026-10-02
+
+- Updated README, DocC, design, changelog, and contributor guidance for continuous phase, bounded speed, system accessibility, actual engine layout, Swift 6 development requirements, and installed simulator selection. Remote/branch status is current. No upstream or fixture changes.
+- Final DocC: `xcodebuild docbuild -quiet -project ThinkingOrbsDemo.xcodeproj -scheme ThinkingOrbsKit -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/orbs-fixes-docc` — exit 0, empty diagnostics log `/private/tmp/orbs-fixes-docc-final.log`.
+- Release budget: `THINKING_ORBS_GALLERY_BUDGET_MS=2 CLANG_MODULE_CACHE_PATH=/private/tmp/orbs-audit-module-cache swift test -c release --disable-sandbox --scratch-path /private/tmp/orbs-audit-release --cache-path /private/tmp/orbs-audit-spm-cache --config-path /private/tmp/orbs-audit-spm-config --security-path /private/tmp/orbs-audit-spm-security --filter PerformanceBudgetTests` — passed; test duration 0.156 s, average geometry tick below 2 ms. Log `/private/tmp/orbs-fixes-release.log`.
+- `CLANG_MODULE_CACHE_PATH=/private/tmp/orbs-audit-module-cache swift Scripts/generate-orb-spec.swift Upstream/orbs-spec.json /private/tmp/orbs-fixes-generated.swift` and `diff -u Sources/ThinkingOrbsKit/Generated/OrbSpec.swift /private/tmp/orbs-fixes-generated.swift` — identical.
+- `cmp Upstream/orbs-golden.json Tests/ThinkingOrbsKitTests/Fixtures/orbs-golden.json`, `Scripts/check-secrets.sh`, and `git diff --check` — passed. `git diff 3c411bc -- Upstream Tests/ThinkingOrbsKitTests/Fixtures` — empty.
+- `bash media/social/render.sh --check` — all three variants passed, log `/private/tmp/orbs-fixes-media.log`.
+- Final simulator preference read returned `0`, matching the original value. No physical-device or iOS 15 runtime validation was performed. Existing SDK test-library deployment warnings remain documented in CONTRIBUTING.md. Changes are local commits on `codex/audit-remediation`; no push or merge performed.
+
+### Merge preparation — 2026-10-02
+
+- Fetched origin: remote main had no new commits. The prior main CI run 32157089817 failed because the text parser selected `M4` from an iPad name instead of the UUID. Reproduced the old parser output with `iPad Pro 11-inch (M4)`.
+- Replaced text splitting with `simctl --json` and explicit `.udid` selection. Executed the extracted workflow step against a fixture containing a parenthesized iPad name and an unavailable device, then the real simulator inventory: both selected valid expected UUIDs. Fixture verification and real destinations printed successfully; `git diff --check` passed.
+- Fresh package verification: `CLANG_MODULE_CACHE_PATH=/private/tmp/orbs-audit-module-cache swift test --disable-sandbox --scratch-path /private/tmp/orbs-audit-debug --cache-path /private/tmp/orbs-audit-spm-cache --config-path /private/tmp/orbs-audit-spm-config --security-path /private/tmp/orbs-audit-spm-security` — 33 tests in 13 suites passed, log `/private/tmp/orbs-merge-tests.log`.

@@ -19,7 +19,7 @@ struct GalleryView: View {
                                 state: state,
                                 size: .points64,
                                 theme: theme,
-                                reduceMotionOverride: forcedReduceMotion
+                                reduceMotionOverride: forcedReduceMotion ? true : nil
                             )
                             Text(state.accessibilityLabel.replacingOccurrences(of: "…", with: ""))
                                 .font(.subheadline)

@@ -53,19 +53,25 @@ ThinkingOrb(
 )
 ```
 
+Speed changes preserve the current phase. Zero speed and `paused` freeze it;
+resuming continues from that phase. Finite speed is clamped to `0...100`;
+nonfinite speed uses `1`. New running instances share an initial phase, while individually
+changed speed/pause histories can diverge.
+
 Keep `reduceMotionOverride` set to `nil` in production. This lets the system Reduce
 Motion preference remain authoritative.
 
 ## Verify the integration
 
 Build the application for an iOS simulator. Package maintainers can also run the
-public consumer-module tests:
+public consumer-module tests. Replace `<SIMULATOR_UDID>` with an identifier from
+`xcrun simctl list devices available`:
 
 ```bash
 xcodebuild test -quiet \
   -project ThinkingOrbsDemo.xcodeproj \
   -scheme ThinkingOrbsKitIOSTests \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
+  -destination 'platform=iOS Simulator,id=<SIMULATOR_UDID>'
 ```
 
 ## Troubleshooting

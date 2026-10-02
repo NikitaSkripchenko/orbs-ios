@@ -55,3 +55,10 @@ Swift and JavaScript standard-library math can produce different sub-tolerance s
 - Date: 2026-08-18
 
 Keep deterministic geometry tests in the Swift Package test target and verify the iOS-only public SwiftUI surface from the checked-in `ThinkingOrbsKitIOSTests` Xcode target. The target imports `ThinkingOrbsKit` without `@testable`, so public API availability is tested from a consumer's perspective without claiming macOS support.
+
+## ADR-009: Continuous playback after control changes
+
+- Status: Accepted
+- Date: 2026-10-02
+
+New orbs initialize from the common reference date. Each SwiftUI view retains a pure playback clock with an anchor date, accumulated phase, and normalized rate. Reanchor at speed and suspension changes so speed, pause, zero speed, and Reduce Motion do not retroactively rescale elapsed time. Resume from the frozen animated phase. This favors continuity over re-synchronizing independently controlled instances. State/size changes still select the corresponding preset and may change geometry immediately. Finite speed is bounded to `0...100`; nonfinite speed uses `1`. Geometry and pinned upstream vectors are unchanged.

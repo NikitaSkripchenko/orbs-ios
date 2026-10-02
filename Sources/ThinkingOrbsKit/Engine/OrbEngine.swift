@@ -3,7 +3,7 @@ import Foundation
 enum OrbEngine {
     static func normalizedSpeed(_ speed: Double) -> Double {
         guard speed.isFinite else { return 1 }
-        return max(0, speed)
+        return min(100, max(0, speed))
     }
 
     static func frame(

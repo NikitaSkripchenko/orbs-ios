@@ -45,8 +45,9 @@ jobs:
 
       - name: Select simulator destinations
         run: |
-          iphone_id=$(xcrun simctl list devices available | awk -F '[()]' '/iPhone/{print $2; exit}')
-          ipad_id=$(xcrun simctl list devices available | awk -F '[()]' '/iPad/{print $2; exit}')
+          devices=$(xcrun simctl list devices available --json)
+          iphone_id=$(jq -r '[.devices[][] | select(.isAvailable and (.name | startswith("iPhone")))][0].udid // empty' <<< "$devices")
+          ipad_id=$(jq -r '[.devices[][] | select(.isAvailable and (.name | startswith("iPad")))][0].udid // empty' <<< "$devices")
           test -n "$iphone_id"
           test -n "$ipad_id"
           echo "IPHONE_DESTINATION=platform=iOS Simulator,id=$iphone_id" >> "$GITHUB_ENV"
@@ -67,6 +68,26 @@ jobs:
             -scheme ThinkingOrbsDemo \
             -destination "$IPHONE_DESTINATION" \
             -only-testing:ThinkingOrbsDemoUITests \
+            -derivedDataPath "$RUNNER_TEMP/iphone-ui-tests"
+
+      - name: Test system Reduce Motion
+        env:
+          TEST_RUNNER_EXPECTED_REDUCE_MOTION: "1"
+        run: |
+          simulator_id=${IPHONE_DESTINATION##*id=}
+          xcrun simctl bootstatus "$simulator_id" -b
+          if original_motion=$(xcrun simctl spawn "$simulator_id" defaults read com.apple.Accessibility ReduceMotionEnabled 2>/dev/null); then
+            trap 'xcrun simctl spawn "$simulator_id" defaults write com.apple.Accessibility ReduceMotionEnabled -bool "$original_motion"' EXIT
+          else
+            trap 'xcrun simctl spawn "$simulator_id" defaults delete com.apple.Accessibility ReduceMotionEnabled' EXIT
+          fi
+          xcrun simctl spawn "$simulator_id" defaults write com.apple.Accessibility ReduceMotionEnabled -bool YES
+          xcodebuild test -quiet \
+            -project ThinkingOrbsDemo.xcodeproj \
+            -scheme ThinkingOrbsDemo \
+            -destination "$IPHONE_DESTINATION" \
+            -only-testing:ThinkingOrbsDemoUITests/ThinkingOrbsDemoUITests/testDemoFollowsSystemReduceMotion \
+            -parallel-testing-enabled NO \
             -derivedDataPath "$RUNNER_TEMP/iphone-ui-tests"
 
       - name: Test demo on iPad

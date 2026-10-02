@@ -3,6 +3,27 @@ import Testing
 @testable import ThinkingOrbsKit
 
 struct RendererBehaviorTests {
+    @Test func extremeFiniteSpeedProducesRenderableFrames() throws {
+        for state in OrbState.allCases {
+            for size in OrbSize.allCases {
+                let resolved = OrbSpec.resolve(state: state, size: size)
+                let date = Date(timeIntervalSinceReferenceDate: 812_000_000)
+                let clock = OrbPlaybackClock(date: date, speed: .greatestFiniteMagnitude, paused: false)
+                let time = OrbRenderBehavior.modeTime(
+                    playbackTime: clock.time(at: date),
+                    reduceMotion: false,
+                    presetSpeed: resolved.speed
+                )
+                try #require(time.isFinite)
+                let frame = OrbEngine.frame(resolved: resolved, size: size, modeTime: time)
+                #expect(!frame.dots.isEmpty)
+                #expect(frame.dots.allSatisfy {
+                    [$0.x, $0.y, $0.z, $0.radius, $0.white, $0.alpha].allSatisfy(\.isFinite)
+                })
+            }
+        }
+    }
+
     @Test func resolvesThemeAndMirrorsInk() {
         #expect(OrbInk.gray(white: 0.2, dark: false) == 0.2)
         #expect(OrbInk.gray(white: 0.2, dark: true) == 0.8)
@@ -21,10 +42,9 @@ struct RendererBehaviorTests {
     @Test func reduceMotionUsesPinnedStaticModeTime() {
         #expect(
             OrbRenderBehavior.modeTime(
-                date: .distantFuture,
-                reduceMotion: true,
-                presetSpeed: 9,
-                userSpeed: 2
+                    playbackTime: 812_000_000,
+                    reduceMotion: true,
+                    presetSpeed: 9
             ) == 0.6
         )
     }
@@ -71,12 +91,12 @@ struct RendererBehaviorTests {
 
     @Test func runningModeUsesPresetAndUserSpeed() {
         let date = Date(timeIntervalSinceReferenceDate: 2)
+        let clock = OrbPlaybackClock(date: date, speed: 2, paused: false)
         #expect(
             OrbRenderBehavior.modeTime(
-                date: date,
+                playbackTime: clock.time(at: date),
                 reduceMotion: false,
-                presetSpeed: 3,
-                userSpeed: 2
+                presetSpeed: 3
             ) == 12
         )
     }

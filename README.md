@@ -65,8 +65,9 @@ Two independently tuned sizes are available: `.points20` for inline use and `.po
 ## Behavior
 
 - `OrbTheme.automatic` follows SwiftUI `colorScheme`; `.light` and `.dark` pin the monochrome ink.
-- `speed` multiplies the baked state/size speed. Nonfinite values use `1`; negative values clamp to `0`.
-- `paused` freezes the shared timeline phase.
+- `speed` multiplies the baked state/size speed. Nonfinite values use `1`; finite values clamp to `0...100` to keep animation time safe.
+- Changing `speed` preserves the current phase. Zero speed and `paused` freeze it; resuming continues from the frozen phase.
+- New running instances with the same state, size, and speed share a phase. Individual speed/pause changes preserve local continuity rather than jumping back to the shared phase.
 - `reduceMotionOverride` is an optional demo/testing hook; production callers should omit it so system Reduce Motion remains authoritative.
 - Reduce Motion renders the upstream representative static frame at `t = 0.6`.
 - Every instance exposes one image-like accessibility element with the state label or a caller-provided override. Individual dots and lines remain decorative.
@@ -93,13 +94,14 @@ Run deterministic package tests:
 swift test
 ```
 
-Run the public API tests on the supported iOS platform:
+Run the public API tests on the supported iOS platform. Use `xcrun simctl list devices available`
+to find an installed simulator and replace `<SIMULATOR_UDID>`:
 
 ```bash
 xcodebuild test -quiet \
   -project ThinkingOrbsDemo.xcodeproj \
   -scheme ThinkingOrbsKitIOSTests \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
+  -destination 'platform=iOS Simulator,id=<SIMULATOR_UDID>'
 ```
 
 The CI workflow also enforces optimized geometry performance, generated-source parity,

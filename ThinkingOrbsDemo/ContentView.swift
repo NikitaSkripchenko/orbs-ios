@@ -114,7 +114,7 @@ private struct PlaygroundView: View {
                 theme: theme,
                 speed: speed,
                 paused: paused,
-                reduceMotionOverride: forcedReduceMotion
+                reduceMotionOverride: forcedReduceMotion ? true : nil
             )
             .accessibilityIdentifier("playgroundOrb")
 

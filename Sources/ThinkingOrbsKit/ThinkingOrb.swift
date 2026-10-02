@@ -1,5 +1,29 @@
 import Foundation
 
+struct OrbPlaybackClock {
+    private var anchorDate: Date
+    private var phase: Double
+    private var rate: Double
+
+    init(date: Date, speed: Double, paused: Bool) {
+        let speed = OrbEngine.normalizedSpeed(speed)
+        anchorDate = date
+        // New instances share a phase; later input changes preserve local continuity.
+        phase = max(0, date.timeIntervalSinceReferenceDate) * speed
+        rate = paused ? 0 : speed
+    }
+
+    func time(at date: Date) -> Double {
+        phase + max(0, date.timeIntervalSince(anchorDate)) * rate
+    }
+
+    mutating func update(date: Date, speed: Double, paused: Bool) {
+        phase = time(at: date)
+        anchorDate = date
+        rate = paused ? 0 : OrbEngine.normalizedSpeed(speed)
+    }
+}
+
 enum OrbInk {
     static func gray(white: Double, dark: Bool) -> Double {
         let clamped = min(1, max(0, white))
@@ -21,15 +45,12 @@ enum OrbRenderBehavior {
     }
 
     static func modeTime(
-        date: Date,
+        playbackTime: Double,
         reduceMotion: Bool,
-        presetSpeed: Double,
-        userSpeed: Double
+        presetSpeed: Double
     ) -> Double {
         if reduceMotion { return OrbSpec.staticTime }
-        return date.timeIntervalSinceReferenceDate
-            * presetSpeed
-            * OrbEngine.normalizedSpeed(userSpeed)
+        return playbackTime * presetSpeed
     }
 }
 
@@ -43,6 +64,7 @@ import SwiftUI
 public struct ThinkingOrb: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
+    @State private var clock: OrbPlaybackClock
 
     private let state: OrbState
     private let size: OrbSize
@@ -59,8 +81,8 @@ public struct ThinkingOrb: View {
     ///   - size: One of the two tuned upstream sizes.
     ///   - theme: Automatic or explicit monochrome appearance.
     ///   - speed: A multiplier for the preset speed. Nonfinite values use `1` and
-    ///     negative values clamp to `0`.
-    ///   - paused: Whether to stop timeline updates at the current shared-clock phase.
+    ///     finite values clamp to `0...100`.
+    ///   - paused: Whether to freeze the current phase. Resuming continues from that phase.
     ///   - reduceMotionOverride: A testing and demo override. Pass `nil` in production
     ///     to respect the system Reduce Motion setting.
     ///   - accessibilityLabel: A custom VoiceOver label, or `nil` for the state's default.
@@ -80,9 +102,12 @@ public struct ThinkingOrb: View {
         self.paused = paused
         self.reduceMotionOverride = reduceMotionOverride
         self.customAccessibilityLabel = accessibilityLabel
+        _clock = State(initialValue: OrbPlaybackClock(date: Date(), speed: speed, paused: paused))
     }
 
     public var body: some View {
+        // Read State in body so reanchoring also redraws a suspended TimelineView.
+        let playbackClock = clock
         let resolved = OrbSpec.resolve(state: state, size: size)
         let effectiveReduceMotion = reduceMotionOverride ?? reduceMotion
         let timelinePaused = OrbRenderBehavior.isTimelinePaused(
@@ -96,10 +121,9 @@ public struct ThinkingOrb: View {
         )) { timeline in
             Canvas { context, _ in
                 let modeTime = OrbRenderBehavior.modeTime(
-                    date: timeline.date,
+                    playbackTime: playbackClock.time(at: timeline.date),
                     reduceMotion: effectiveReduceMotion,
-                    presetSpeed: resolved.speed,
-                    userSpeed: speed
+                    presetSpeed: resolved.speed
                 )
                 let frame = OrbEngine.frame(
                     resolved: resolved,
@@ -132,6 +156,15 @@ public struct ThinkingOrb: View {
                     )
                 }
             }
+        }
+        .onAppear {
+            clock.update(date: Date(), speed: speed, paused: timelinePaused)
+        }
+        .onChange(of: OrbEngine.normalizedSpeed(speed)) { newSpeed in
+            clock.update(date: Date(), speed: newSpeed, paused: timelinePaused)
+        }
+        .onChange(of: timelinePaused) { isPaused in
+            clock.update(date: Date(), speed: speed, paused: isPaused)
         }
         .frame(width: CGFloat(size.rawValue), height: CGFloat(size.rawValue))
         .accessibilityElement()

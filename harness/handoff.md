@@ -65,6 +65,17 @@
 
 ## Decisions and risks
 
+### Social video exports — 2026-10-02
+
+- Added three locally rendered vertical presentations in `media/social`: Noir, Editorial, and Pulse. Each is 18 seconds, 1080×1920, 30 fps, H.264/yuv420p with AAC stereo, original synthesized audio, a cover image, and an upstream credit in the closing card.
+- Applied the user's feedback to remove dense copy and code. Final compositions focus on enlarged engine animation, a nine-state gallery, minimal branding, and the repository URL.
+- Exporter compiles the existing pure geometry sources without modifying them; 64-point geometry is enlarged for the promotional composition. It is not a screen recording and does not claim macOS package-renderer support.
+- `bash media/social/render.sh` — completed all three final exports, 540 frames each.
+- `python3 media/social/verify.py` — all three exports passed resolution, frame-count, duration, codec, full audio/video decode, and non-clipping audio checks. Final peaks: Noir −1.6 dBFS, Editorial −1.5 dBFS, Pulse −1.7 dBFS. Exact file sizes and checks are in `media/social/verification.json`.
+- Visually reviewed `media/social/storyboard.jpg`, extracted from final MP4s at 1.5, 5, 9.5, 12, and 16 seconds: readable text, no overlaps, all nine states visible, upstream credit retained.
+- `CLANG_MODULE_CACHE_PATH=/private/tmp/thinking-orbs-social-cache swift test --disable-sandbox --scratch-path /private/tmp/thinking-orbs-social-tests --cache-path /private/tmp/thinking-orbs-social-spm-cache --config-path /private/tmp/thinking-orbs-social-spm-config --security-path /private/tmp/thinking-orbs-social-spm-security` — 25 tests in 12 suites passed, 0 failures. The first attempt with default caches was blocked by filesystem permissions; the successful run used writable temporary caches.
+- `git diff --check` — passed. No package, demo, pinned upstream, or public API source changes. No new iOS build was needed for these media-only additions.
+
 - The public renderer is wrapped in `#if os(iOS)` so host parity tests do not accidentally advertise macOS support. Add macOS only after the TODO checklist is completed.
 - Equal-depth dots can receive different sub-tolerance ordering across JavaScript and Swift math libraries. Tests compare each dot as a unique multiset within `1e-4` and separately require monotonic depth order; lines remain ordered strictly.
 - Manual visual, VoiceOver, and Instruments inspection remain release follow-ups. Automated golden parity, renderer behavior, and demo UI coverage are complete.

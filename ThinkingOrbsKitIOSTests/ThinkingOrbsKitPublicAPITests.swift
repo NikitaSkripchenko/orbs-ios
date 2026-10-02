@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import XCTest
 import ThinkingOrbsKit
 
@@ -7,7 +8,9 @@ final class ThinkingOrbsKitPublicAPITests: XCTestCase {
     func testDefaultViewBuildsFromPublicAPI() {
         let view = ThinkingOrb()
 
-        _ = view.body
+        let host = UIHostingController(rootView: view)
+        host.loadViewIfNeeded()
+        host.view.layoutIfNeeded()
     }
 
     func testEveryPublicOptionBuildsFromConsumerModule() {
@@ -24,7 +27,9 @@ final class ThinkingOrbsKitPublicAPITests: XCTestCase {
                         accessibilityLabel: "Custom status"
                     )
 
-                    _ = view.body
+                    let host = UIHostingController(rootView: view)
+                    host.loadViewIfNeeded()
+                    host.view.layoutIfNeeded()
                 }
             }
         }

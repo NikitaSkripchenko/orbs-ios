@@ -155,7 +155,7 @@ ThinkingOrb(
 )
 ```
 
-The view owns no external state. Changing any input immediately changes subsequent rendered frames. Nonfinite speed falls back to `1`; negative speed is clamped to `0`. A speed of `0` renders a stable frame while `paused` preserves the current shared-clock phase. `reduceMotionOverride` is an optional demo/testing hook; production callers should omit it so the system accessibility environment remains authoritative.
+The view owns no external state. Changing any input immediately changes subsequent rendered frames. Nonfinite speed falls back to `1`; finite speed is clamped to `0...100`. Changing speed preserves the current phase. Zero speed and explicit pause freeze that phase; resuming excludes the paused duration. `reduceMotionOverride` is an optional demo/testing hook; production callers should omit it so the system accessibility environment remains authoritative.
 
 ## Engine architecture
 
@@ -184,9 +184,9 @@ Package builds do not run the generator. A maintainer-only script may regenerate
 
 ### Rendering
 
-`ThinkingOrb` uses `TimelineView(.animation)` and `Canvas`. The clock is derived from the timeline date so all instances share a phase. Each frame draws lines first, then depth-sorted circles using source-over composition. Rendering uses no filters or offscreen bitmap resources.
+`ThinkingOrb` uses `TimelineView(.animation)` and `Canvas`. A pure `OrbPlaybackClock` stores an anchor date, accumulated phase, and rate. New instances derive their initial phase from the shared reference date. SwiftUI retains the clock in `@State` and reanchors it when speed or suspension changes, preserving continuity. Independently controlled instances can diverge after those changes; they do not jump back to a global phase. Each frame draws lines first, then depth-sorted circles using source-over composition. Rendering uses no filters or offscreen bitmap resources.
 
-`OrbTheme.automatic` resolves from SwiftUI's `colorScheme`. Explicit themes override the environment. Dark appearance mirrors the upstream grayscale ink calculation. Reduce Motion renders the upstream representative static time and pauses the animation schedule.
+`OrbTheme.automatic` resolves from SwiftUI's `colorScheme`. Explicit themes override the environment. Dark appearance mirrors the upstream grayscale ink calculation. Reduce Motion renders the upstream representative static time, pauses the animation schedule, and suspends the playback clock; disabling it continues the previous animated phase.
 
 ## Accessibility
 

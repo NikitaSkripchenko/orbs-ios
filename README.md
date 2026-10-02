@@ -66,7 +66,8 @@ Two independently tuned sizes are available: `.points20` for inline use and `.po
 
 - `OrbTheme.automatic` follows SwiftUI `colorScheme`; `.light` and `.dark` pin the monochrome ink.
 - `speed` multiplies the baked state/size speed. Nonfinite values use `1`; finite values clamp to `0...100` to keep animation time safe.
-- `paused` freezes the shared timeline phase.
+- Changing `speed` preserves the current phase. Zero speed and `paused` freeze it; resuming continues from the frozen phase.
+- New instances with the same state, size, and speed share a phase. Individual speed/pause changes preserve local continuity rather than jumping back to the shared phase.
 - `reduceMotionOverride` is an optional demo/testing hook; production callers should omit it so system Reduce Motion remains authoritative.
 - Reduce Motion renders the upstream representative static frame at `t = 0.6`.
 - Every instance exposes one image-like accessibility element with the state label or a caller-provided override. Individual dots and lines remain decorative.

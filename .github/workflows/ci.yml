@@ -74,8 +74,12 @@ jobs:
           TEST_RUNNER_EXPECTED_REDUCE_MOTION: "1"
         run: |
           simulator_id=${IPHONE_DESTINATION##*id=}
-          original_motion=$(xcrun simctl spawn "$simulator_id" defaults read com.apple.Accessibility ReduceMotionEnabled)
-          trap 'xcrun simctl spawn "$simulator_id" defaults write com.apple.Accessibility ReduceMotionEnabled -bool "$original_motion"' EXIT
+          xcrun simctl bootstatus "$simulator_id" -b
+          if original_motion=$(xcrun simctl spawn "$simulator_id" defaults read com.apple.Accessibility ReduceMotionEnabled 2>/dev/null); then
+            trap 'xcrun simctl spawn "$simulator_id" defaults write com.apple.Accessibility ReduceMotionEnabled -bool "$original_motion"' EXIT
+          else
+            trap 'xcrun simctl spawn "$simulator_id" defaults delete com.apple.Accessibility ReduceMotionEnabled' EXIT
+          fi
           xcrun simctl spawn "$simulator_id" defaults write com.apple.Accessibility ReduceMotionEnabled -bool YES
           xcodebuild test -quiet \
             -project ThinkingOrbsDemo.xcodeproj \

@@ -91,3 +91,9 @@
 - Manual visual, VoiceOver, and Instruments inspection remain release follow-ups. Automated golden parity, renderer behavior, and demo UI coverage are complete.
 - No git remote or release tag exists yet. Publishing version 0.1.0 remains an external release step after physical-device validation.
 - `xcrun devicectl list devices` found the paired iPhone 16 Pro in `unavailable` state, so physical-device Instruments and energy profiling could not run in this session.
+
+### Audit fixes — 2026-10-02: finite speed bounds
+
+- Clamp finite user speed to `0...100`; nonfinite values still fall back to `1`. This prevents time overflow and integer-conversion traps in geometry. Pinned formulas and golden files are unchanged.
+- RED: `CLANG_MODULE_CACHE_PATH=/private/tmp/orbs-audit-module-cache swift test --disable-sandbox --scratch-path /private/tmp/orbs-audit-debug --cache-path /private/tmp/orbs-audit-spm-cache --config-path /private/tmp/orbs-audit-spm-config --security-path /private/tmp/orbs-audit-spm-security --filter extremeFiniteSpeedProducesRenderableFrames` — failed as expected: mode time was infinity. Log: `/private/tmp/orbs-speed-red.log`.
+- GREEN: same command without `--filter` — 26 tests in 12 suites passed, including every state/size at extreme finite speed and all 72 golden cases. Log: `/private/tmp/orbs-speed-green.log`.

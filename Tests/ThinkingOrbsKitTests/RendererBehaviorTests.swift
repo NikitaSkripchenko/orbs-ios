@@ -3,6 +3,27 @@ import Testing
 @testable import ThinkingOrbsKit
 
 struct RendererBehaviorTests {
+    @Test func extremeFiniteSpeedProducesRenderableFrames() throws {
+        for state in OrbState.allCases {
+            for size in OrbSize.allCases {
+                let resolved = OrbSpec.resolve(state: state, size: size)
+                let time = OrbRenderBehavior.modeTime(
+                    date: Date(timeIntervalSinceReferenceDate: 812_000_000),
+                    reduceMotion: false,
+                    presetSpeed: resolved.speed,
+                    userSpeed: .greatestFiniteMagnitude
+                )
+                try #require(time.isFinite)
+                #expect(time <= 812_000_000 * resolved.speed * 100)
+                let frame = OrbEngine.frame(resolved: resolved, size: size, modeTime: time)
+                #expect(!frame.dots.isEmpty)
+                #expect(frame.dots.allSatisfy {
+                    [$0.x, $0.y, $0.z, $0.radius, $0.white, $0.alpha].allSatisfy(\.isFinite)
+                })
+            }
+        }
+    }
+
     @Test func resolvesThemeAndMirrorsInk() {
         #expect(OrbInk.gray(white: 0.2, dark: false) == 0.2)
         #expect(OrbInk.gray(white: 0.2, dark: true) == 0.8)

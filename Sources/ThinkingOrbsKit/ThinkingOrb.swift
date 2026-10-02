@@ -59,7 +59,7 @@ public struct ThinkingOrb: View {
     ///   - size: One of the two tuned upstream sizes.
     ///   - theme: Automatic or explicit monochrome appearance.
     ///   - speed: A multiplier for the preset speed. Nonfinite values use `1` and
-    ///     negative values clamp to `0`.
+    ///     finite values clamp to `0...100`.
     ///   - paused: Whether to stop timeline updates at the current shared-clock phase.
     ///   - reduceMotionOverride: A testing and demo override. Pass `nil` in production
     ///     to respect the system Reduce Motion setting.

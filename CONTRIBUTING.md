@@ -5,9 +5,9 @@ small, dependency-free, and verifiable offline.
 
 ## Prerequisites
 
-- A macOS development machine with Xcode and its command-line tools.
-- An installed iOS Simulator runtime.
-- Swift 5.9 or later package support.
+- For package consumers: Swift 5.9 or later and an iOS 15+ application target.
+- For repository development: a macOS machine with Xcode 16 or later and Swift 6. The demo uses Swift 6 language mode; package tests use Swift Testing.
+- An installed iOS Simulator runtime compatible with the selected Xcode.
 
 ## Run the checks
 
@@ -24,13 +24,16 @@ THINKING_ORBS_GALLERY_BUDGET_MS=2 \
   swift test -c release --filter PerformanceBudgetTests
 ```
 
+List installed simulators with `xcrun simctl list devices available`. Replace
+`<SIMULATOR_UDID>` below with an available iPhone or iPad identifier.
+
 Run public API tests on iOS:
 
 ```bash
 xcodebuild test -quiet \
   -project ThinkingOrbsDemo.xcodeproj \
   -scheme ThinkingOrbsKitIOSTests \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest'
+  -destination 'platform=iOS Simulator,id=<SIMULATOR_UDID>'
 ```
 
 Build the universal demo:
@@ -41,6 +44,30 @@ xcodebuild build -quiet \
   -scheme ThinkingOrbsDemo \
   -destination 'generic/platform=iOS Simulator'
 ```
+
+Run UI regressions on iPhone and iPad (repeat with each simulator identifier):
+
+```bash
+xcodebuild test -quiet \
+  -project ThinkingOrbsDemo.xcodeproj \
+  -scheme ThinkingOrbsDemo \
+  -destination 'platform=iOS Simulator,id=<SIMULATOR_UDID>' \
+  -only-testing:ThinkingOrbsDemoUITests \
+  -parallel-testing-enabled NO
+```
+
+The rendered pause test verifies that changing speed preserves a frozen frame and
+that playback resumes. `testDemoFollowsSystemReduceMotion` checks both demo tabs
+against the simulator's current system setting. CI additionally enables system
+Reduce Motion, sets `TEST_RUNNER_EXPECTED_REDUCE_MOTION=1`, runs that test alone,
+and restores the setting. See `.github/workflows/ci.yml` for the exact commands.
+UI comparisons allow two 8-bit color steps for Canvas rasterization noise;
+geometry comparisons retain the pinned `1e-4` tolerance.
+
+Xcode 27's XCTest libraries require iOS 17 even though the app/package deployment
+target is iOS 15. This can produce linker warnings for the test targets; run tests
+on an SDK-compatible runtime. An iOS 15 deployment build is not a substitute for
+manual runtime validation on the oldest supported OS.
 
 Scan the working tree and history for high-confidence credential patterns:
 

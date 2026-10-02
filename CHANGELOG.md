@@ -6,6 +6,13 @@ The project follows [Semantic Versioning](https://semver.org/) after its first t
 
 ## Unreleased
 
+### Fixed
+
+- Changing speed preserves animation phase; pause and zero speed resume from the frozen phase.
+- Finite speed is limited to `0...100` to prevent geometry crashes at extreme values.
+- The demo respects system Reduce Motion when its preview override is off.
+- Added clock sequence and rendered UI regressions for playback and system accessibility settings.
+
 ### Added
 
 - iOS consumer-module tests for the complete public initializer surface.

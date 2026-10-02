@@ -133,3 +133,9 @@
 - `cmp Upstream/orbs-golden.json Tests/ThinkingOrbsKitTests/Fixtures/orbs-golden.json`, `Scripts/check-secrets.sh`, and `git diff --check` — passed. `git diff 3c411bc -- Upstream Tests/ThinkingOrbsKitTests/Fixtures` — empty.
 - `bash media/social/render.sh --check` — all three variants passed, log `/private/tmp/orbs-fixes-media.log`.
 - Final simulator preference read returned `0`, matching the original value. No physical-device or iOS 15 runtime validation was performed. Existing SDK test-library deployment warnings remain documented in CONTRIBUTING.md. Changes are local commits on `codex/audit-remediation`; no push or merge performed.
+
+### Merge preparation — 2026-10-02
+
+- Fetched origin: remote main had no new commits. The prior main CI run 32157089817 failed because the text parser selected `M4` from an iPad name instead of the UUID. Reproduced the old parser output with `iPad Pro 11-inch (M4)`.
+- Replaced text splitting with `simctl --json` and explicit `.udid` selection. Executed the extracted workflow step against a fixture containing a parenthesized iPad name and an unavailable device, then the real simulator inventory: both selected valid expected UUIDs. Fixture verification and real destinations printed successfully; `git diff --check` passed.
+- Fresh package verification: `CLANG_MODULE_CACHE_PATH=/private/tmp/orbs-audit-module-cache swift test --disable-sandbox --scratch-path /private/tmp/orbs-audit-debug --cache-path /private/tmp/orbs-audit-spm-cache --config-path /private/tmp/orbs-audit-spm-config --security-path /private/tmp/orbs-audit-spm-security` — 33 tests in 13 suites passed, log `/private/tmp/orbs-merge-tests.log`.

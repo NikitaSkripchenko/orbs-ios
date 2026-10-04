@@ -62,3 +62,14 @@ Keep deterministic geometry tests in the Swift Package test target and verify th
 - Date: 2026-10-02
 
 New orbs initialize from the common reference date. Each SwiftUI view retains a pure playback clock with an anchor date, accumulated phase, and normalized rate. Reanchor at speed and suspension changes so speed, pause, zero speed, and Reduce Motion do not retroactively rescale elapsed time. Resume from the frozen animated phase. This favors continuity over re-synchronizing independently controlled instances. State/size changes still select the corresponding preset and may change geometry immediately. Finite speed is bounded to `0...100`; nonfinite speed uses `1`. Geometry and pinned upstream vectors are unchanged.
+
+## ADR-010: Opt-in higher refresh schedule
+
+- Status: Accepted
+- Date: 2026-10-04
+
+Append `allowsHighRefreshRate: Bool = false` to the public initializer. Select a
+pure minimum interval of 1/60 or 1/120 second without changing playback state or
+view identity. Share the demo preference across both tabs and adaptive settings.
+Enable `CADisableMinimumFrameDurationOnPhone` in the demo; consumers configure
+it in their own app. Actual 120 fps remains subject to the display and system.

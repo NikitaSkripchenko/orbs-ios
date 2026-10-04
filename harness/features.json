@@ -27,7 +27,8 @@
     { "id": "performance-budget", "status": "complete" },
     { "id": "ci-security-automation", "status": "complete" },
     { "id": "docc", "status": "complete" },
-    { "id": "documentation", "status": "complete" }
+    { "id": "documentation", "status": "complete" },
+    { "id": "opt-in-high-refresh-rate", "status": "complete" }
   ],
   "acceptanceCriteria": [
     "The package builds for an iOS 15 or newer simulator.",
@@ -37,6 +38,7 @@
     "Public API tests run from a consumer module on an iOS simulator.",
     "CI enforces parity, performance, generated-source, UI, and secret checks.",
     "No runtime or project-generator dependency is required.",
-    "macOS support is documented as future work and is not claimed by version 0.1."
+    "macOS support is documented as future work and is not claimed by version 0.1.",
+    "Opt-in high refresh selects 1/120 instead of 1/60 without resetting playback; demo settings are shared across both tabs."
   ]
 }

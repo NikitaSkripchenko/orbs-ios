@@ -24,7 +24,8 @@ final class ThinkingOrbsKitPublicAPITests: XCTestCase {
                         speed: 1.25,
                         paused: true,
                         reduceMotionOverride: true,
-                        accessibilityLabel: "Custom status"
+                        accessibilityLabel: "Custom status",
+                        allowsHighRefreshRate: true
                     )
 
                     let host = UIHostingController(rootView: view)

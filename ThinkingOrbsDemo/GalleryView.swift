@@ -4,6 +4,7 @@ import ThinkingOrbsKit
 struct GalleryView: View {
     let theme: OrbTheme
     let forcedReduceMotion: Bool
+    let allowsHighRefreshRate: Bool
 
     private let columns = [
         GridItem(.adaptive(minimum: 144, maximum: 200), spacing: 24)
@@ -19,7 +20,8 @@ struct GalleryView: View {
                                 state: state,
                                 size: .points64,
                                 theme: theme,
-                                reduceMotionOverride: forcedReduceMotion ? true : nil
+                                reduceMotionOverride: forcedReduceMotion ? true : nil,
+                                allowsHighRefreshRate: allowsHighRefreshRate
                             )
                             Text(state.accessibilityLabel.replacingOccurrences(of: "…", with: ""))
                                 .font(.subheadline)

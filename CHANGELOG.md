@@ -15,6 +15,8 @@ The project follows [Semantic Versioning](https://semver.org/) after its first t
 
 ### Added
 
+- Opt-in `allowsHighRefreshRate` for up to 120 fps, with a shared demo toggle and ProMotion configuration guidance.
+
 - iOS consumer-module tests for the complete public initializer surface.
 - Automated package, iOS, UI, performance-budget, generated-source, and secret checks.
 - DocC API documentation and contributor guidance.

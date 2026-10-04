@@ -3,6 +3,33 @@ import Testing
 @testable import ThinkingOrbsKit
 
 struct RendererBehaviorTests {
+    @Test func refreshRateSelectsMinimumInterval() {
+        #expect(OrbRenderBehavior.minimumInterval(allowsHighRefreshRate: false) == 1.0 / 60.0)
+        #expect(OrbRenderBehavior.minimumInterval(allowsHighRefreshRate: true) == 1.0 / 120.0)
+    }
+
+    @Test func refreshCadencePreservesPlaybackAndSuspension() {
+        let start = Date(timeIntervalSinceReferenceDate: 100)
+        for (speed, paused, reduceMotion) in [(2.0, false, false), (2.0, true, false), (0.0, false, false), (2.0, false, true)] {
+            let suspended = OrbRenderBehavior.isTimelinePaused(
+                paused: paused, reduceMotion: reduceMotion, userSpeed: speed
+            )
+            let clock = OrbPlaybackClock(date: start, speed: speed, paused: suspended)
+            for highRefresh in [false, true, false] {
+                let interval = OrbRenderBehavior.minimumInterval(allowsHighRefreshRate: highRefresh)
+                let nextTick = start.addingTimeInterval(interval)
+                let expected = 100 * speed + (suspended ? 0 : interval * speed)
+                #expect(abs(clock.time(at: nextTick) - expected) < 1e-10)
+                #expect(clock.time(at: start.addingTimeInterval(1)) == 100 * speed + (suspended ? 0 : speed))
+                if reduceMotion {
+                    #expect(OrbRenderBehavior.modeTime(
+                        playbackTime: clock.time(at: nextTick), reduceMotion: true, presetSpeed: 1
+                    ) == OrbSpec.staticTime)
+                }
+            }
+        }
+    }
+
     @Test func extremeFiniteSpeedProducesRenderableFrames() throws {
         for state in OrbState.allCases {
             for size in OrbSize.allCases {

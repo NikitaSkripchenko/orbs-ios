@@ -9,6 +9,7 @@ struct ControlsView: View {
     @Binding var speed: Double
     @Binding var paused: Bool
     @Binding var forcedReduceMotion: Bool
+    @Binding var allowsHighRefreshRate: Bool
 
     var body: some View {
         NavigationView {
@@ -22,7 +23,8 @@ struct ControlsView: View {
                     theme: $theme,
                     speed: $speed,
                     paused: $paused,
-                    forcedReduceMotion: $forcedReduceMotion
+                    forcedReduceMotion: $forcedReduceMotion,
+                    allowsHighRefreshRate: $allowsHighRefreshRate
                 )
                 .frame(maxWidth: 640)
             }
@@ -47,6 +49,7 @@ struct ControlsForm: View {
     @Binding var speed: Double
     @Binding var paused: Bool
     @Binding var forcedReduceMotion: Bool
+    @Binding var allowsHighRefreshRate: Bool
 
     var body: some View {
         Form {
@@ -90,6 +93,15 @@ struct ControlsForm: View {
 
                 Toggle("Paused", isOn: $paused)
                 Toggle("Reduce Motion Preview", isOn: $forcedReduceMotion)
+                Toggle(isOn: $allowsHighRefreshRate) {
+                    VStack(alignment: .leading) {
+                        Text("Allow 120 FPS")
+                        Text("Up to 120 fps on supported displays.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .accessibilityIdentifier("highRefreshRateToggle")
             }
         }
     }

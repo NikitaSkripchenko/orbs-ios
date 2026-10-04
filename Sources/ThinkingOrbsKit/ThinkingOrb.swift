@@ -32,6 +32,10 @@ enum OrbInk {
 }
 
 enum OrbRenderBehavior {
+    static func minimumInterval(allowsHighRefreshRate: Bool) -> TimeInterval {
+        1.0 / (allowsHighRefreshRate ? 120.0 : 60.0)
+    }
+
     static func accessibilityLabel(custom: String?, state: OrbState) -> String {
         custom ?? state.accessibilityLabel
     }
@@ -73,6 +77,7 @@ public struct ThinkingOrb: View {
     private let paused: Bool
     private let reduceMotionOverride: Bool?
     private let customAccessibilityLabel: String?
+    private let allowsHighRefreshRate: Bool
 
     /// Creates a thinking orb.
     ///
@@ -86,6 +91,9 @@ public struct ThinkingOrb: View {
     ///   - reduceMotionOverride: A testing and demo override. Pass `nil` in production
     ///     to respect the system Reduce Motion setting.
     ///   - accessibilityLabel: A custom VoiceOver label, or `nil` for the state's default.
+    ///   - allowsHighRefreshRate: Allows up to 120 fps on supported displays. The system
+    ///     controls actual cadence; consuming iPhone apps must enable
+    ///     `CADisableMinimumFrameDurationOnPhone` in their Info.plist. Defaults to `false`.
     public init(
         state: OrbState = .working,
         size: OrbSize = .points64,
@@ -93,7 +101,8 @@ public struct ThinkingOrb: View {
         speed: Double = 1,
         paused: Bool = false,
         reduceMotionOverride: Bool? = nil,
-        accessibilityLabel: String? = nil
+        accessibilityLabel: String? = nil,
+        allowsHighRefreshRate: Bool = false
     ) {
         self.state = state
         self.size = size
@@ -102,6 +111,7 @@ public struct ThinkingOrb: View {
         self.paused = paused
         self.reduceMotionOverride = reduceMotionOverride
         self.customAccessibilityLabel = accessibilityLabel
+        self.allowsHighRefreshRate = allowsHighRefreshRate
         _clock = State(initialValue: OrbPlaybackClock(date: Date(), speed: speed, paused: paused))
     }
 
@@ -116,7 +126,7 @@ public struct ThinkingOrb: View {
             userSpeed: speed
         )
         TimelineView(.animation(
-            minimumInterval: 1.0 / 60.0,
+            minimumInterval: OrbRenderBehavior.minimumInterval(allowsHighRefreshRate: allowsHighRefreshRate),
             paused: timelinePaused
         )) { timeline in
             Canvas { context, _ in

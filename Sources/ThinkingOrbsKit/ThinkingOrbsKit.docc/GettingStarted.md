@@ -61,6 +61,25 @@ changed speed/pause histories can diverge.
 Keep `reduceMotionOverride` set to `nil` in production. This lets the system Reduce
 Motion preference remain authoritative.
 
+## Allow higher refresh rates
+
+The default animation schedule uses a minimum interval of `1/60` second. Opt in
+with `ThinkingOrb(state: .working, allowsHighRefreshRate: true)` to use `1/120`.
+Changing this option preserves phase, speed, pause, and Reduce Motion behavior.
+
+For higher refresh rates on supported iPhones, add this Boolean key to the
+**consuming app's** Info.plist (the package cannot configure it for you):
+
+```xml
+<key>CADisableMinimumFrameDurationOnPhone</key>
+<true/>
+```
+
+This allows up to 120 fps on supported displays; it does not guarantee sustained
+120 fps. The system controls actual cadence and may lower it for power, thermal,
+or other conditions. The demo's Motion section includes an **Allow 120 FPS**
+toggle, off by default, shared by Playground and every gallery orb.
+
 ## Verify the integration
 
 Build the application for an iOS simulator. Package maintainers can also run the

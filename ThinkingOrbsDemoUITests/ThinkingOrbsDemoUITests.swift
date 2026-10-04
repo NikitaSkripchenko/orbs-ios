@@ -56,6 +56,7 @@ final class ThinkingOrbsDemoUITests: XCTestCase {
         showMotionControls(in: app)
         XCTAssertEqual(app.switches["Paused"].value as? String, "1")
         app.sliders["speedSlider"].adjust(toNormalizedSliderPosition: 0.75)
+        setHighRefreshRate(true, in: app)
         dismissSettingsIfNeeded(in: app)
         Thread.sleep(forTimeInterval: 0.2)
         let changedShot = orb.screenshot()
@@ -73,6 +74,51 @@ final class ThinkingOrbsDemoUITests: XCTestCase {
         dismissSettingsIfNeeded(in: app)
         Thread.sleep(forTimeInterval: 0.2)
         XCTAssertGreaterThan(pixelDifference(orb.screenshot(), frozenShot), 2)
+    }
+
+    func testHighRefreshRateTogglePersistsAcrossTabsAndRespectsReduceMotion() {
+        let app = XCUIApplication()
+        app.launch()
+        tab(named: "Playground", in: app).tap()
+        showMotionControls(in: app)
+        let toggle = app.switches["highRefreshRateToggle"]
+        for _ in 0..<3 where !toggle.isHittable { app.swipeUp() }
+        XCTAssertEqual(toggle.value as? String, "0")
+        setHighRefreshRate(true, in: app)
+        app.switches["Reduce Motion Preview"].coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        dismissSettingsIfNeeded(in: app)
+        let orb = app.descendants(matching: .any)["playgroundOrb"]
+        assertMotion(of: orb, reduced: true)
+        showMotionControls(in: app)
+        setHighRefreshRate(false, in: app)
+        dismissSettingsIfNeeded(in: app)
+        assertMotion(of: orb, reduced: true)
+        showMotionControls(in: app)
+        setHighRefreshRate(true, in: app)
+        dismissSettingsIfNeeded(in: app)
+        tab(named: "All Animations", in: app).tap()
+        assertMotion(of: app.images["Working…"], reduced: true)
+        tab(named: "Playground", in: app).tap()
+        showMotionControls(in: app)
+        XCTAssertEqual(toggle.value as? String, "1")
+    }
+
+    private func setHighRefreshRate(_ enabled: Bool, in app: XCUIApplication) {
+        let toggle = app.switches["highRefreshRateToggle"]
+        for _ in 0..<3 where !toggle.isHittable { app.swipeUp() }
+        XCTAssertTrue(toggle.isHittable)
+        if toggle.value as? String != (enabled ? "1" : "0") {
+            // SwiftUI can expose either the entire labeled row or the switch itself.
+            // Tap the center of the trailing switch rather than its outer edge.
+            toggle.coordinate(withNormalizedOffset: .zero).withOffset(
+                CGVector(dx: toggle.frame.width - 30, dy: toggle.frame.height / 2)
+            ).tap()
+        }
+        let expectedValue = enabled ? "1" : "0"
+        let updated = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", expectedValue), object: toggle
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [updated], timeout: 2), .completed)
     }
 
     private func pixelDifference(_ first: XCUIScreenshot, _ second: XCUIScreenshot) -> Int {

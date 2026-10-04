@@ -113,7 +113,8 @@ public struct ThinkingOrb: View {
         speed: Double = 1,
         paused: Bool = false,
         reduceMotionOverride: Bool? = nil,
-        accessibilityLabel: String? = nil
+        accessibilityLabel: String? = nil,
+        allowsHighRefreshRate: Bool = false
     )
 }
 
@@ -182,7 +183,7 @@ Package builds do not run the generator. A maintainer-only script may regenerate
 
 ### Rendering
 
-`ThinkingOrb` uses `TimelineView(.animation)` and `Canvas`. A pure `OrbPlaybackClock` stores an anchor date, accumulated phase, and rate. New running instances derive their initial phase from the shared reference date. SwiftUI retains the clock in `@State` and reanchors it when speed or suspension changes, preserving continuity. Independently controlled instances can diverge after those changes; they do not jump back to a global phase. Each frame draws lines first, then depth-sorted circles using source-over composition. Rendering uses no filters or offscreen bitmap resources.
+`ThinkingOrb` uses `TimelineView(.animation)` and `Canvas`. Its minimum interval defaults to `1/60`; `allowsHighRefreshRate: true` selects `1/120` without changing the playback clock. Actual cadence remains system-controlled. Consuming iPhone apps must set `CADisableMinimumFrameDurationOnPhone = true` in their Info.plist. A pure `OrbPlaybackClock` stores an anchor date, accumulated phase, and rate. New running instances derive their initial phase from the shared reference date. SwiftUI retains the clock in `@State` and reanchors it when speed or suspension changes, preserving continuity. Independently controlled instances can diverge after those changes; they do not jump back to a global phase. Each frame draws lines first, then depth-sorted circles using source-over composition. Rendering uses no filters or offscreen bitmap resources.
 
 `OrbTheme.automatic` resolves from SwiftUI's `colorScheme`. Explicit themes override the environment. Dark appearance mirrors the upstream grayscale ink calculation. Reduce Motion renders the upstream representative static time, pauses the animation schedule, and suspends the playback clock; disabling it continues the previous animated phase.
 
@@ -229,7 +230,8 @@ Both Playground settings presentations use the same native SwiftUI controls:
 - segmented size picker for 20 and 64 points;
 - segmented theme picker for Automatic, Light, and Dark;
 - speed slider from `0.25` through `2.0`, with a reset-to-1 action;
-- paused toggle; and
+- paused toggle;
+- Allow 120 FPS toggle, off by default, shared with the gallery; and
 - forced Reduce Motion preview toggle: on passes `true`; off passes `nil` so the system preference remains authoritative.
 
 The compact sheet uses a navigation title and Done action. The regular-width pane uses a persistent Settings header. Both use semantic styles, Dynamic Type, and scrollable content at large accessibility sizes. Demo state is in memory only.

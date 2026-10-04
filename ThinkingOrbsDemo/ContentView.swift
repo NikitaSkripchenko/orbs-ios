@@ -15,10 +15,11 @@ struct ContentView: View {
     @State private var speed = 1.0
     @State private var paused = false
     @State private var forcedReduceMotion = false
+    @State private var allowsHighRefreshRate = false
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            GalleryView(theme: theme, forcedReduceMotion: forcedReduceMotion)
+            GalleryView(theme: theme, forcedReduceMotion: forcedReduceMotion, allowsHighRefreshRate: allowsHighRefreshRate)
                 .tabItem {
                     Label("All Animations", systemImage: "square.grid.2x2")
                 }
@@ -30,7 +31,8 @@ struct ContentView: View {
                 theme: $theme,
                 speed: $speed,
                 paused: $paused,
-                forcedReduceMotion: $forcedReduceMotion
+                forcedReduceMotion: $forcedReduceMotion,
+                allowsHighRefreshRate: $allowsHighRefreshRate
             )
             .tabItem {
                 Label("Playground", systemImage: "slider.horizontal.3")
@@ -49,6 +51,7 @@ private struct PlaygroundView: View {
     @Binding var speed: Double
     @Binding var paused: Bool
     @Binding var forcedReduceMotion: Bool
+    @Binding var allowsHighRefreshRate: Bool
 
     @State private var showsSettings = false
 
@@ -114,7 +117,8 @@ private struct PlaygroundView: View {
                 theme: theme,
                 speed: speed,
                 paused: paused,
-                reduceMotionOverride: forcedReduceMotion ? true : nil
+                reduceMotionOverride: forcedReduceMotion ? true : nil,
+                allowsHighRefreshRate: allowsHighRefreshRate
             )
             .accessibilityIdentifier("playgroundOrb")
 
@@ -148,7 +152,8 @@ private struct PlaygroundView: View {
                 theme: $theme,
                 speed: $speed,
                 paused: $paused,
-                forcedReduceMotion: $forcedReduceMotion
+                forcedReduceMotion: $forcedReduceMotion,
+                allowsHighRefreshRate: $allowsHighRefreshRate
             )
         }
         .background(Color(uiColor: .systemGroupedBackground))
@@ -178,7 +183,8 @@ private struct PlaygroundView: View {
             theme: $theme,
             speed: $speed,
             paused: $paused,
-            forcedReduceMotion: $forcedReduceMotion
+            forcedReduceMotion: $forcedReduceMotion,
+            allowsHighRefreshRate: $allowsHighRefreshRate
         )
     }
 }
